@@ -3,32 +3,19 @@
     <h1>Подтверждение оплаты</h1>
     <b-button variant="primary" @click="showModal">Добавить чек</b-button>
     
-    <b-modal ref="add-check" hide-footer title="Добавить чек" size="lg">
-      <div class="add-check-modal">
-        <form class="add-check-form" @submit.prevent="onAddSubmit">
-          <b-input v-model="data.customer_name" placeholder="Ф.И.О. заказчика" />
-          <b-input v-model="data.customer_ogrn" placeholder="ОГРН заказчика" />
-          <b-input v-model="data.customer_inn" placeholder="ИНН заказчика" />
-          <b-input v-model="data.customer_address" placeholder="Адрес заказчика" />
-          <b-input v-model="data.customer_phone" placeholder="Телефон заказчика" />
-          <b-input v-model="data.customer_email" placeholder="Email заказчика" />
-          <!--<b-input v-model="data.customer_bank" placeholder="Банк, выпустивший карту" />
-          <b-input v-model="data.customer_bic" placeholder="БИК" />
-          <b-input v-model="data.customer_bank_acc" placeholder="Банковский счет" />-->
-          <b-select v-model="selected" :options="options"/>
-          <b-input placeholder="Дата заключения договора" />
-          <b-input placeholder="Дата завершения работ" />
+    <b-modal ref="add-check" hide-footer title="Добавить чек">
+      <form class="add-check-form" @submit.prevent="onAddSubmit">
+        <b-select v-model="selected" :options="options" />
+        <b-input v-model="data.check" placeholder="Номер чека"/>
+        <b-input v-model="data.date" placeholder="Дата совершения оплаты"/>
+        <b-input v-model="data.sum" placeholder="Сумма оплаты"/>
 
-          <div class="add-check-buttons">
-            <b-button type="confirm" variant="primary" @click="hideModal">Добавить</b-button>
-            <b-button type="reset" variant="primary" @click="hideModal">Отмена</b-button>
-          </div>
-        </form>
-        <div class="add-check-services">
-          <h5>Список оказываемых услуг</h5>
+        <div class="add-check-buttons">
+          <b-button type="confirm" variant="primary" @click="hideModal">Добавить</b-button>
+          <b-button type="reset" variant="primary" @click="hideModal">Отмена</b-button>
         </div>
-      </div>
-  </b-modal>
+      </form>
+    </b-modal>
   </div>
 </template>
 
@@ -38,19 +25,14 @@ export default {
   data() {
     return {
       data: {
-        customer_name: '',
-        customer_ogrn: '',
-        customer_inn: '',
-        customer_address: '',
-        customer_phone: '',
-        customer_email: '',
-        customer_bank: '',
-        customer_bic: '',
-        customer_bank_acc: '',
+        deal_id: '',
+        check: '',
+        date: '',
+        sum: '',
       },
       selected: null,
       options: [
-        { value: null, text: 'Please select an option' },
+        { value: null, text: 'Выберите договор' },
         { value: 'a', text: 'This is First option' },
         { value: 'b', text: 'Selected Option' },
         { value: { C: '3PO' }, text: 'This is an option with object value' },
@@ -60,10 +42,10 @@ export default {
   },
   methods: {
     showModal() {
-      this.$refs['add-deal'].show()
+      this.$refs['add-check'].show()
     },
     hideModal() {
-      this.$refs['add-deal'].hide()
+      this.$refs['add-check'].hide()
     },
     onAddSubmit() {
 
@@ -73,25 +55,25 @@ export default {
 </script>
 
 <style scoped>
-.add-deal-modal {
+.add-check-modal {
   display: flex;
 }
-.add-deal-form {
+.add-check-form {
   flex: 1;
 }
-.add-deal-form > *{
+.add-check-form > *{
   margin-bottom: 1em;
 }
-.add-deal-services {
+.add-check-services {
   width: 45%;
   padding-left: 2em;
 }
-.add-deal-buttons {
+.add-check-buttons {
   display: flex;
   justify-content: flex-end;
   margin-top: 2em;
 }
-.add-deal-buttons button {
+.add-check-buttons button {
   margin-left: 1em;
 }
 </style>

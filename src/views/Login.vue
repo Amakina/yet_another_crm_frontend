@@ -33,7 +33,10 @@ export default {
     },
     onSubmit() {
       this.$axios.post('/login', this.data)
-        .then(() => this.$router.push('Home'))
+        .then((result) => {
+          window.localStorage.setItem('token',  result.data.token)
+          this.$router.push('Home')
+        })
         .catch(() => {})
     }
   }

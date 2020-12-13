@@ -26,11 +26,13 @@
 </template>
 
 <script>
+
 export default {
   data() {
     return {
+      busy: true,
       currentPage: 1,
-      rows: 7,
+      rows: 0,
       perPage: 5,
       data: {
         code: '',
@@ -38,51 +40,23 @@ export default {
         description: '',
         price: 0.0,
       },
-      items: [
-        {
-          id: 1,
-          code: "A1234B",
-          name: "Установка смесителя",
-          description: "Описание"
-        },
-        {
-          id: 1,
-          code: "A1234B",
-          name: "Установка смесителя",
-          description: "Описание"
-        },
-        {
-          id: 1,
-          code: "A1234B",
-          name: "Установка смесителя",
-          description: "Описание"
-        },
-        {
-          id: 1,
-          code: "A1234B",
-          name: "Установка смесителя",
-          description: "Описание"
-        },
-        {
-          id: 1,
-          code: "A1234B",
-          name: "Установка смесителя",
-          description: "Описание"
-        },
-        {
-          id: 1,
-          code: "A1234B",
-          name: "Установка смесителя",
-          description: "Описание"
-        },
-        {
-          id: 1,
-          code: "A1234B",
-          name: "Установка смесителя",
-          description: "Описание"
-        }
-      ]
+      items: []
     }
+  },
+  computed: {
+    token() {
+      return window.localStorage.getItem('token') || {}
+    }
+  },
+  mounted() {
+    this.busy = true
+    this.$axios.post('/get-services', { token: this.token })
+      .then(({ data }) => {
+        this.items = data
+        this.rows = data.length
+        this.busy = false
+      })
+      .catch((error) => console.log(error))
   },
   methods: {
     showModal() {
@@ -92,7 +66,9 @@ export default {
       this.$refs['add-services'].hide()
     },
     onAddSubmit() {
-
+      this.$axios.post('/add-service', { ...this.data, token: this.token })
+        .then(() => console.log('SUCCESS'))
+        .catch((error) => console.log(error))
     }
   }
 }
