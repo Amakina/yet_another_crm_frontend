@@ -27,6 +27,11 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue')
+  },
+  {
+    path: '/control-panel',
+    name: 'Control Panel',
+    component: () => import('../views/ControlPanel.vue')
   }
 ]
 

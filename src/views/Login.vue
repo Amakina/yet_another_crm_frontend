@@ -3,8 +3,8 @@
     <h1>Войти</h1>
     <b-form action="/login" method="POST" @submit.prevent="onSubmit">
       <div>
-        <b-form-input v-model="data.user_email" name="user_email" type="email" placeholder="email@mail.com" required/>
-        <b-form-input v-model="data.user_password" name="user_password" type="password" placeholder="Пароль" minlength="8" required/>
+        <b-form-input v-model="data.username" name="username" type="email" placeholder="email@mail.com" required/>
+        <b-form-input v-model="data.password" name="password" type="password" placeholder="Пароль" minlength="8" required/>
         <b-button type="submit" variant="primary" block>Войти</b-button>
         <router-link to="/signup">Еще не зарегистрированы? Регистрация</router-link>
       </div>
@@ -19,8 +19,8 @@ export default {
     return {
       page: 1,
       data: {
-        user_email: '',
-        user_password: '',
+        username: '',
+        password: '',
       }
     }
   },
@@ -32,7 +32,9 @@ export default {
       this.page = 1;
     },
     onSubmit() {
-      this.$axios.post('/signup', this.data)
+      this.$axios.post('/login', this.data)
+        .then(() => this.$router.push('Home'))
+        .catch(() => {})
     }
   }
 }
@@ -48,6 +50,7 @@ form input{
 }
 form button {
   margin-top: 1.5em;
+  margin-bottom: 2em;
 }
 h1 {
   margin-top: 2em;

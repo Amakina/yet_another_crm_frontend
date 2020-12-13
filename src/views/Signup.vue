@@ -14,9 +14,11 @@
         <b-form-input v-model="data.user_name" name="user_name" placeholder="Ф.И.О." required/>
         <b-form-input v-model="data.user_email" name="user_email" type="email" placeholder="email@mail.com" required/>
         <b-form-input v-model="data.user_password" name="user_password" type="password" placeholder="Пароль" minlength="8" required/>
+        <b-form-input v-model="repeat_password" name="repeat_password" type="password" placeholder="Повторите пароль" minlength="8" required/>
         <b-button type="submit" variant="primary" block>Зарегистрироваться</b-button>
         <b-button variant="primary" block @click="onBackClick">Назад</b-button>
       </div>
+      <router-link to="/login">Уже зарегистрированы? Войти</router-link>
     </b-form>
   </div>
 </template>
@@ -27,6 +29,7 @@ export default {
   data() {
     return {
       page: 1,
+      repeat_password: '',
       data: {
         company_name: '',
         company_ogrn: '',
@@ -47,6 +50,7 @@ export default {
       this.page = 1;
     },
     onSubmit() {
+      if (this.repeat_password !== this.data.user_password) return
       this.$axios.post('/signup', this.data)
     }
   }
@@ -63,6 +67,7 @@ form input{
 }
 form button {
   margin-top: 1.5em;
+  margin-bottom: 2em;
 }
 h1 {
   margin-top: 2em;
