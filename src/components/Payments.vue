@@ -7,12 +7,24 @@
       <b-input placeholder="Поиск"/>
       <b-button variant="primary" @click="showModal">Добавить чек</b-button>
     </div>
-    <b-table striped hover :items="items" :per-page="perPage" :current-page="currentPage"></b-table>
+    <b-table 
+      striped 
+      hover 
+      :items="items"  
+      :fields="fields"
+      :per-page="perPage" 
+      :current-page="currentPage" 
+      @row-clicked="onRowClick"
+    >
+      <template #cell(delete)="data">
+        <a @click="deleteService(data.item.id)">Удалить</a>
+      </template>
+    </b-table>
     
     <b-modal ref="add-check" hide-footer title="Добавить чек">
       <form class="add-check-form" @submit.prevent="onAddSubmit">
         <v-select v-model="data.selected" :options="options" label="deal_id" placeholder="Выберите договор" />
-        <b-input v-model="data.check" placeholder="Номер чека"/>
+        <b-input v-model="data.receipt" placeholder="Номер чека"/>
         <div class="add-payment-date">
           <label>Дата и время оплаты:</label>
           <date-picker v-model="data.date" type="datetime" valueType="format" format="DD.MM.YYYY HH:mm"/>
@@ -35,11 +47,37 @@ export default {
     return {
       data: {
         selected: null,
-        check: '',
+        receipt: '',
         date: '',
         sum: '',
       },
       options: [],
+      fields: [
+        {
+          key: 'id',
+          label: 'ID'
+        },
+        {
+          key: 'deal_id',
+          label: 'Номер договора'
+        },
+        {
+          key: 'receipt',
+          label: 'Номер чека',
+        },
+        {
+          key: 'date',
+          label: 'Дата выдачи чека'
+        },
+        {
+          key: 'sum',
+          lebel: 'Сумма оплаты',
+        }, 
+        {
+          key: 'delete',
+          label: ''
+        }
+      ],
       busy: true,
       currentPage: 1,
       rows: 0,
@@ -59,11 +97,22 @@ export default {
       .catch((error) => console.log(error))
 
     this.$axios.post('/get-deals', { token: this.token })
-    .then(({ data }) =>  this.options = data)
+    .then(({ data }) =>  this.options = data.filter(d => d.id && !d.service_name))
     .catch((error) => console.log(error))
   },
   methods: {
+    resetData() {
+      this.data = {
+        code: '',
+        name: '',
+        description: '',
+        price: 0.0,
+      }
+      this.update = false
+      this.error = ''
+    },
     showModal() {
+      this.resetData()
       this.$refs['add-check'].show()
     },
     hideModal() {
@@ -76,10 +125,41 @@ export default {
     },
     onAddSubmit() {
       const fixedDate = this.formatDate(this.data.date)
-      console.log(this.data.selected)
-      this.$axios.post('/add-payment', { ...this.data, date: fixedDate, token: this.token })
-        .then(() => console.log('success'))
-        .catch((error) => console.log(error))
+      if (!this.update) {
+        this.$axios.post('/add-payment', { ...this.data, date: fixedDate, token: this.token })
+          .then(() => console.log('success'))
+          .catch((error) => console.log(error))
+        return
+      }
+
+      this.$axios.post('/update-payment', { ...this.data, date: fixedDate, token: this.token })
+          .then(() => {
+            Object.keys(this.data).forEach((key) => {
+              this.selectedRecord[key] = this.data[key]
+            })
+            this.selectedRecord = null
+          })
+          .catch((error) => console.log(error))
+    },
+    onRowClick(record) {
+      this.update = true
+      this.error = ''
+      this.data = JSON.parse(JSON.stringify(record))
+      this.data.selected = this.options.find(o => o.id == this.data.deal_id)
+      this.selectedRecord = record
+      this.$refs['add-check'].show()
+    },
+    deleteService(id) {
+      for (let i = 0; i < this.items.length; i++) {
+        if (id == this.items[i].id) {
+          this.$axios.post('/delete-payments', { ...this.items[i], token: this.token })
+            .then(() => {
+              this.items.splice(i, 1)
+            })
+            .catch((error) => console.log(error))
+          break
+        }
+      }
     }
   }
 }
@@ -119,5 +199,11 @@ export default {
 .add-payment-date {
   display: flex;
   justify-content: space-between;
+}
+a {
+  cursor: pointer!important;
+}
+a:hover {
+  color: blue!important;
 }
 </style>

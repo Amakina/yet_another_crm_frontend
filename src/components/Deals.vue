@@ -7,13 +7,25 @@
       <b-input placeholder="Поиск"/>
       <b-button variant="primary" @click="showModal">Добавить договор</b-button>
     </div>
-    <b-table striped hover :items="items" :per-page="perPage" :current-page="currentPage"></b-table>
+    <b-table 
+      striped 
+      hover 
+      :items="items"  
+      :fields="fields"
+      :per-page="perPage" 
+      :current-page="currentPage" 
+      @row-clicked="onRowClick"
+    >
+      <template #cell(delete)="data">
+        <a @click="deleteService(data.item.id)">Удалить</a>
+      </template>
+    </b-table>
     
     <b-modal ref="add-deal" hide-footer title="Добавить договор" size="lg">
       <div class="add-deal-modal">
         <form class="add-deal-form" @submit.prevent="onAddSubmit">
           <b-tabs class="add-deal-tabs">
-            <b-tab title="Добавить заказчика">
+            <b-tab title="Добавить заказчика" v-if="!update">
               <b-input v-model="data.name" placeholder="Ф.И.О. заказчика" />
               <b-input v-model="data.ogrn" placeholder="ОГРН заказчика" />
               <b-input v-model="data.inn" placeholder="ИНН заказчика" />
@@ -26,6 +38,7 @@
             </b-tab>
           </b-tabs>
 
+          <b-input v-model="data.deal_id" placeholder="Номер договора" />
           <v-select :options="services" v-model="selectedServices" multiple label="name" placeholder="Выберите услуги"/>
           <div class="add-deal-dates">
             <label>Дата заключения договора</label>
@@ -59,6 +72,8 @@ export default {
   data() {
     return {
       data: {
+        customer_id: null,
+        deal_id: '',
         name: '',
         ogrn: '',
         inn: '',
@@ -76,7 +91,46 @@ export default {
       currentPage: 1,
       rows: 0,
       perPage: 5,
-      items: []
+      items: [],
+      fields: [
+        {
+          key: 'id',
+          label: 'ID'
+        },
+        {
+          key: 'deal_id',
+          label: '№ договора'
+        },
+        {
+          key: 'status',
+          label: 'Статус',
+        },
+        {
+          key: 'deal_date',
+          label: 'Описание'
+        },
+        {
+          key: 'finish_date',
+          lebel: 'Цена',
+        }, 
+        {
+          key: 'customer_name',
+          label: 'Заказчик'
+        },
+        {
+          key: 'service_name',
+          label: 'Услуги'
+        },
+        {
+          key: 'final_sum',
+          label: 'Сумма'
+        },
+        {
+          key: 'delete',
+          label: ''
+        }
+      ],
+      update: false,
     }
   },
   computed: {
@@ -104,7 +158,23 @@ export default {
     this.busy = true
     this.$axios.post('/get-deals', { token: this.token })
       .then(({ data }) => {
-        this.items = data
+        if (!data || !data.length) return
+        let prev = data[0].id
+        let same = []
+        data.forEach((e, i) => {
+          if (e.id === prev && e.service_name) {
+            same.push(e)
+            prev = e.id
+          }
+          else {
+            e.selectedServices = same
+            same = []
+            prev = i + 1 < data.length ? data[i + 1] : -1
+          }
+        })
+        this.items = data.filter((e) => {
+          return !e.service_name && e.id
+        })
         this.rows = data.length
         this.busy = false
       })
@@ -122,9 +192,58 @@ export default {
       return `${parts[2]}-${parts[1]}-${parts[0]}`
     },
     onAddSubmit() {
-      this.data.deal_date = this.formatDate(this.data.deal_date)
-      this.data.finish_date = this.formatDate(this.data.finish_date)
-      this.$axios.post('/add-deal', { ...this.data, services: this.selectedServices, token: this.token })
+      const fixedDealDate = this.formatDate(this.data.deal_date)
+      const fixedFinishDate = this.formatDate(this.data.finish_date)
+      const fixedData = { 
+        ...this.data, 
+        customer_id: this.selectedCustomers.id,
+        finish_date: fixedFinishDate, 
+        deal_date: fixedDealDate,
+        services: this.selectedServices, 
+        token: this.token 
+      }
+      if (!this.update) {
+        this.$axios.post('/add-deal', fixedData)
+        return
+      }
+
+      this.$axios.post('/update-deal', fixedData)
+        .then(() => {
+          Object.keys(fixedData).forEach((key) => {
+            this.selectedRecord[key] = fixedData[key]
+          })
+          this.selectedRecord.selectedServices = fixedData.services
+          this.selectedRecord = null
+        })
+        .catch((error) => console.log(error))
+    },
+    clone(o) {
+      return JSON.parse(JSON.stringify(o))
+    },
+    onRowClick(record) {
+      this.update = true
+      this.error = ''
+      this.data = this.clone(record)
+      this.selectedCustomers = this.customers.find(o => o.id == this.data.customer_id)
+      this.selectedServices = this.clone(this.services)
+        .filter(o => this.data.selectedServices.find(s => {
+          if (s.service_id === o.id || s.id === o.id) o.quantity = s.quantity
+          return s.service_id === o.id || s.id === o.id
+        }))
+      this.selectedRecord = record
+      this.$refs['add-deal'].show()
+    },
+    deleteService(id) {
+      for (let i = 0; i < this.items.length; i++) {
+        if (id == this.items[i].id) {
+          this.$axios.post('/delete-deal', { ...this.items[i], token: this.token })
+            .then(() => {
+              this.items.splice(i, 1)
+            })
+            .catch((error) => console.log(error))
+          break
+        }
+      }
     }
   }
 }
@@ -188,5 +307,11 @@ h1 {
 .add-deal-dates {
   display: flex;
   justify-content: space-between;
+}
+a {
+  cursor: pointer!important;
+}
+a:hover {
+  color: blue!important;
 }
 </style>

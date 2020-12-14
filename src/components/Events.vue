@@ -7,7 +7,19 @@
       <b-input placeholder="Поиск"/>
       <b-button variant="primary" @click="showModal">Добавить событие</b-button>
     </div>
-    <b-table striped hover :items="items" :per-page="perPage" :current-page="currentPage"></b-table>
+    <b-table 
+      striped 
+      hover 
+      :items="items"  
+      :fields="fields"
+      :per-page="perPage" 
+      :current-page="currentPage" 
+      @row-clicked="onRowClick"
+    >
+      <template #cell(delete)="data">
+        <a @click="deleteService(data.item.id)">Удалить</a>
+      </template>
+    </b-table>
     
     <b-modal ref="add-event" hide-footer title="Добавить чек">
       <form class="add-event-form" @submit.prevent="onAddSubmit">
@@ -41,7 +53,29 @@ export default {
       currentPage: 1,
       rows: 0,
       perPage: 5,
-      items: []
+      items: [],
+      fields: [
+        {
+          key: 'id',
+          label: 'ID'
+        },
+        {
+          key: 'date',
+          label: 'Дата'
+        },
+        {
+          key: 'description',
+          label: 'Описание',
+        },
+        {
+          key: 'responsible_id',
+          label: 'Ответственный'
+        },
+        {
+          key: 'delete',
+          label: ''
+        }
+      ],
     }
   },
   computed: {
@@ -59,7 +93,18 @@ export default {
       .catch((error) => console.log(error))
   },
   methods: {
+    resetData() {
+      this.data = {
+        code: '',
+        name: '',
+        description: '',
+        price: 0.0,
+      }
+      this.update = false
+      this.error = ''
+    },
     showModal() {
+      this.resetData()
       this.$refs['add-event'].show()
     },
     hideModal() {
@@ -72,9 +117,41 @@ export default {
     },
     onAddSubmit() {
       const fixedDate = this.formatDate(this.data.date)
-      this.$axios.post('/add-event', { ...this.data, date: fixedDate, token: this.token })
-        .then(() => console.log('success'))
+      if (!this.update) {
+        this.$axios.post('/add-event', { ...this.data, date: fixedDate, token: this.token })
+          .then(() => console.log('success'))
+          .catch((error) => console.log(error))
+        return
+      }
+
+      this.$axios.post('/update-event', { ...this.data, date: fixedDate, token: this.token })
+        .then(() => {
+          Object.keys(this.data).forEach((key) => {
+            this.selectedRecord[key] = this.data[key]
+          })
+          this.selectedRecord = null
+        })
         .catch((error) => console.log(error))
+    },
+    onRowClick(record) {
+      this.update = true
+      this.error = ''
+      this.data = JSON.parse(JSON.stringify(record))
+      this.data.selected = this.workers.find(o => o.id == this.data.responsible_id)
+      this.selectedRecord = record
+      this.$refs['add-event'].show()
+    },
+    deleteService(id) {
+      for (let i = 0; i < this.items.length; i++) {
+        if (id == this.items[i].id) {
+          this.$axios.post('/delete-event', { ...this.items[i], token: this.token })
+            .then(() => {
+              this.items.splice(i, 1)
+            })
+            .catch((error) => console.log(error))
+          break
+        }
+      }
     }
   }
 }
@@ -114,5 +191,11 @@ export default {
   min-width: 200px;
   height: calc(1.5em + 0.75rem + 2px);
   justify-self: flex-end;
+}
+a {
+  cursor: pointer!important;
+}
+a:hover {
+  color: blue!important;
 }
 </style>

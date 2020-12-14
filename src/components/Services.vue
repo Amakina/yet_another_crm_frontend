@@ -7,17 +7,28 @@
       <b-input placeholder="Поиск"/>
       <b-button variant="primary" @click="showModal">Добавить услугу</b-button>
     </div>
-    <b-table striped hover :items="items" :per-page="perPage" :current-page="currentPage"></b-table>
+    <b-table 
+      striped 
+      hover 
+      :items="items"  
+      :fields="fields"
+      :per-page="perPage" 
+      :current-page="currentPage" 
+      @row-clicked="onRowClick"
+    >
+      <template #cell(delete)="data">
+        <a @click="deleteService(data.item.id)">Удалить</a>
+      </template>
+    </b-table>
 
-
-    <b-modal ref="add-services" hide-footer title="Добавить услугу">
+    <b-modal ref="add-services" hide-footer :title="modal.title">
       <form class="add-services-modal" @submit.prevent="onAddSubmit">
         <b-input v-model="data.code" placeholder="Код услуги" maxlength="10"/>
         <b-input v-model="data.name" placeholder="Название услуги" maxlength="100"/>
         <b-textarea v-model="data.description" placeholder="Описание услуги" rows="4"/>
         <b-input v-model="data.price" type="number" placeholder="Цена" />
         <div class="add-services-buttons">
-        <b-button type="confirm" variant="primary" @click="hideModal">Добавить</b-button>
+        <b-button type="confirm" variant="primary" @click="hideModal">{{modal.button}}</b-button>
         <b-button type="reset" variant="primary" @click="hideModal">Отмена</b-button>
         </div>
       </form>
@@ -40,12 +51,47 @@ export default {
         description: '',
         price: 0.0,
       },
-      items: []
+      items: [],
+      fields: [
+          {
+            key: 'id',
+            label: 'ID'
+          },
+          {
+            key: 'code',
+            label: 'Код'
+          },
+          {
+            key: 'name',
+            label: 'Название',
+          },
+          {
+            key: 'description',
+            label: 'Описание'
+          },
+          {
+            key: 'price',
+            lebel: 'Цена',
+          }, 
+          {
+            key: 'delete',
+            label: ''
+          }
+        ],
+      selectedRecord: null,
+      update: false,
+      error: ''
     }
   },
   computed: {
     token() {
       return window.localStorage.getItem('token') || {}
+    },
+    modal() {
+      return {
+        button: this.update ? 'Обновить' : 'Добавить',
+        title: this.update ? 'Обновить услугу' : 'Добавить услугу',
+      }
     }
   },
   mounted() {
@@ -59,16 +105,58 @@ export default {
       .catch((error) => console.log(error))
   },
   methods: {
+    resetData() {
+      this.data = {
+        code: '',
+        name: '',
+        description: '',
+        price: 0.0,
+      }
+      this.update = false
+      this.error = ''
+    },
     showModal() {
+      this.resetData()
       this.$refs['add-services'].show()
     },
     hideModal() {
       this.$refs['add-services'].hide()
     },
     onAddSubmit() {
-      this.$axios.post('/add-service', { ...this.data, token: this.token })
-        .then(() => console.log('SUCCESS'))
+      if (!this.update) {
+        this.$axios.post('/add-service', { ...this.data, token: this.token })
+          .then(() => console.log('SUCCESS'))
+          .catch((error) => console.log(error))
+        return
+      }
+      
+      this.$axios.post('/update-service', { ...this.data, token: this.token })
+        .then(() => {
+          Object.keys(this.data).forEach((key) => {
+            this.selectedRecord[key] = this.data[key]
+          })
+          this.selectedRecord = null
+        })
         .catch((error) => console.log(error))
+    },
+    onRowClick(record) {
+      this.update = true
+      this.error = ''
+      this.data = JSON.parse(JSON.stringify(record))
+      this.selectedRecord = record
+      this.$refs['add-services'].show()
+    },
+    deleteService(id) {
+      for (let i = 0; i < this.items.length; i++) {
+        if (id == this.items[i].id) {
+          this.$axios.post('/delete-service', { ...this.items[i], token: this.token })
+            .then(() => {
+              this.items.splice(i, 1)
+            })
+            .catch((error) => console.log(error))
+          break
+        }
+      }
     }
   }
 }
@@ -98,5 +186,11 @@ h1 {
 }
 .add-services-modal button {
   margin-left: 1em;
+}
+a {
+  cursor: pointer!important;
+}
+a:hover {
+  color: blue!important;
 }
 </style>
