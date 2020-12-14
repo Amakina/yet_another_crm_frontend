@@ -1,13 +1,22 @@
 <template>
   <div>
     <h1>Подтверждение оплаты</h1>
-    <b-button variant="primary" @click="showModal">Добавить чек</b-button>
+    <div class="payment-controls">
+      <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
+      </b-pagination>
+      <b-input placeholder="Поиск"/>
+      <b-button variant="primary" @click="showModal">Добавить чек</b-button>
+    </div>
+    <b-table striped hover :items="items" :per-page="perPage" :current-page="currentPage"></b-table>
     
     <b-modal ref="add-check" hide-footer title="Добавить чек">
       <form class="add-check-form" @submit.prevent="onAddSubmit">
-        <b-select v-model="selected" :options="options" />
+        <v-select v-model="data.selected" :options="options" label="deal_id" placeholder="Выберите договор" />
         <b-input v-model="data.check" placeholder="Номер чека"/>
-        <b-input v-model="data.date" placeholder="Дата совершения оплаты"/>
+        <div class="add-payment-date">
+          <label>Дата и время оплаты:</label>
+          <date-picker v-model="data.date" type="datetime" valueType="format" format="DD.MM.YYYY HH:mm"/>
+        </div>
         <b-input v-model="data.sum" placeholder="Сумма оплаты"/>
 
         <div class="add-check-buttons">
@@ -25,20 +34,33 @@ export default {
   data() {
     return {
       data: {
-        deal_id: '',
+        selected: null,
         check: '',
         date: '',
         sum: '',
       },
-      selected: null,
-      options: [
-        { value: null, text: 'Выберите договор' },
-        { value: 'a', text: 'This is First option' },
-        { value: 'b', text: 'Selected Option' },
-        { value: { C: '3PO' }, text: 'This is an option with object value' },
-        { value: 'd', text: 'This one is disabled', disabled: true }
-      ]
+      options: [],
+      busy: true,
+      currentPage: 1,
+      rows: 0,
+      perPage: 5,
+      items: []
     }
+  },
+  computed: {
+    token() {
+      return window.localStorage.getItem('token') || {}
+    }
+  },
+  mounted() {
+    this.busy = true
+    this.$axios.post('/get-payments', { token: this.token })
+      .then(({ data }) =>  this.items = data)
+      .catch((error) => console.log(error))
+
+    this.$axios.post('/get-deals', { token: this.token })
+    .then(({ data }) =>  this.options = data)
+    .catch((error) => console.log(error))
   },
   methods: {
     showModal() {
@@ -47,8 +69,17 @@ export default {
     hideModal() {
       this.$refs['add-check'].hide()
     },
+    formatDate(date) {
+      const dateTime = date.split(' ')
+      const parts = dateTime[0].split('.')
+      return `${parts[2]}-${parts[1]}-${parts[0]} ${dateTime[1]}`
+    },
     onAddSubmit() {
-
+      const fixedDate = this.formatDate(this.data.date)
+      console.log(this.data.selected)
+      this.$axios.post('/add-payment', { ...this.data, date: fixedDate, token: this.token })
+        .then(() => console.log('success'))
+        .catch((error) => console.log(error))
     }
   }
 }
@@ -75,5 +106,18 @@ export default {
 }
 .add-check-buttons button {
   margin-left: 1em;
+}
+.payment-controls {
+  display: flex;
+}
+.payment-controls button {
+  margin-bottom: 1rem;
+  min-width: 150px;
+  height: calc(1.5em + 0.75rem + 2px);
+  justify-self: flex-end;
+}
+.add-payment-date {
+  display: flex;
+  justify-content: space-between;
 }
 </style>
