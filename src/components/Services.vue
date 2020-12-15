@@ -16,6 +16,9 @@
       :current-page="currentPage" 
       @row-clicked="onRowClick"
     >
+      <template #cell(index)="data">
+        <div>{{data.index + (currentPage - 1) * perPage + 1}}</div>
+      </template>
       <template #cell(delete)="data">
         <a @click="deleteService(data.item.id)">Удалить</a>
       </template>
@@ -43,8 +46,7 @@ export default {
     return {
       busy: true,
       currentPage: 1,
-      rows: 0,
-      perPage: 5,
+      perPage: 7,
       data: {
         code: '',
         name: '',
@@ -54,8 +56,8 @@ export default {
       items: [],
       fields: [
           {
-            key: 'id',
-            label: 'ID'
+            key: 'index',
+            label: '№'
           },
           {
             key: 'code',
@@ -92,6 +94,9 @@ export default {
         button: this.update ? 'Обновить' : 'Добавить',
         title: this.update ? 'Обновить услугу' : 'Добавить услугу',
       }
+    },
+    rows() {
+      return this.items.length
     }
   },
   mounted() {
@@ -99,7 +104,6 @@ export default {
     this.$axios.post('/get-services', { token: this.token })
       .then(({ data }) => {
         this.items = data
-        this.rows = data.length
         this.busy = false
       })
       .catch((error) => console.log(error))
@@ -125,7 +129,9 @@ export default {
     onAddSubmit() {
       if (!this.update) {
         this.$axios.post('/add-service', { ...this.data, token: this.token })
-          .then(() => console.log('SUCCESS'))
+          .then(() => {
+            this.items.push(this.data)
+          })
           .catch((error) => console.log(error))
         return
       }

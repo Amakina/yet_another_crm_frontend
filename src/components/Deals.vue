@@ -89,7 +89,6 @@ export default {
       services: [],
       busy: true,
       currentPage: 1,
-      rows: 0,
       perPage: 5,
       items: [],
       fields: [
@@ -107,19 +106,15 @@ export default {
         },
         {
           key: 'deal_date',
-          label: 'Описание'
+          label: 'Дата заключения договора'
         },
         {
           key: 'finish_date',
-          lebel: 'Цена',
+          label: 'Дата завершения работ',
         }, 
         {
           key: 'customer_name',
           label: 'Заказчик'
-        },
-        {
-          key: 'service_name',
-          label: 'Услуги'
         },
         {
           key: 'final_sum',
@@ -136,6 +131,9 @@ export default {
   computed: {
     token() {
       return window.localStorage.getItem('token') || {}
+    },
+    rows() {
+      return this.items.length
     }
   },
   mounted() {
@@ -169,19 +167,36 @@ export default {
           else {
             e.selectedServices = same
             same = []
-            prev = i + 1 < data.length ? data[i + 1] : -1
+            prev = i + 1 < data.length ? data[i + 1].id : -1
           }
         })
         this.items = data.filter((e) => {
           return !e.service_name && e.id
         })
-        this.rows = data.length
         this.busy = false
       })
       .catch((error) => console.log(error))
   },
   methods: {
+    resetData() {
+      this.data = {
+        customer_id: null,
+        deal_id: '',
+        name: '',
+        ogrn: '',
+        inn: '',
+        address: '',
+        phone: '',
+        email: '',
+        deal_date: '',
+        finish_date: '',
+      }
+      this.update = false
+      this.selectedCustomers = null
+      this.selectedServices = []
+    },
     showModal() {
+      this.resetData()
       this.$refs['add-deal'].show()
     },
     hideModal() {
@@ -196,7 +211,7 @@ export default {
       const fixedFinishDate = this.formatDate(this.data.finish_date)
       const fixedData = { 
         ...this.data, 
-        customer_id: this.selectedCustomers.id,
+        customer_id: this.selectedCustomers ? this.selectedCustomers.id : null ,
         finish_date: fixedFinishDate, 
         deal_date: fixedDealDate,
         services: this.selectedServices, 
@@ -204,6 +219,10 @@ export default {
       }
       if (!this.update) {
         this.$axios.post('/add-deal', fixedData)
+          .then(() => {
+            this.items.push(this.data)
+          })
+          .catch((error) => console.log(error))
         return
       }
 
@@ -259,7 +278,7 @@ h1 {
 }
 .deal-controls button {
   margin-bottom: 1rem;
-  min-width: 150px;
+  min-width: 200px;
   height: calc(1.5em + 0.75rem + 2px);
   justify-self: flex-end;
 }

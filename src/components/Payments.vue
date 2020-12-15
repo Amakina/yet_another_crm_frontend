@@ -127,7 +127,9 @@ export default {
       const fixedDate = this.formatDate(this.data.date)
       if (!this.update) {
         this.$axios.post('/add-payment', { ...this.data, date: fixedDate, token: this.token })
-          .then(() => console.log('success'))
+          .then(() => {
+            this.items.push({ ...this.data, deal_id: this.data.selected.deal_id })
+          })
           .catch((error) => console.log(error))
         return
       }
