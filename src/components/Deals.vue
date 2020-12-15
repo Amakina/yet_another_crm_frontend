@@ -361,9 +361,6 @@ export default {
 .deal-controls-search {
   margin-right: 1em;
 }
-.deal-controls-filter {
-  /*width: 200px;*/
-}
 .deal-controls-select {
   width: 350px;
   margin-left: 1em;

@@ -180,7 +180,7 @@ export default {
       }
     },
     filterSearch() {
-      
+
     }
   }
 }
@@ -224,9 +224,6 @@ export default {
 }
 .event-controls-search {
   margin-right: 1em;
-}
-.event-controls-filter {
-  /*width: 200px;*/
 }
 .event-controls-select {
   width: 400px;

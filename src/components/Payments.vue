@@ -269,9 +269,6 @@ a:hover {
 .payment-controls-search {
   margin-right: 1em;
 }
-.payment-controls-filter {
-  /*width: 200px;*/
-}
 .payment-controls-select {
   width: 350px;
   margin-left: 1em;

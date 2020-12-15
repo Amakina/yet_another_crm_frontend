@@ -210,9 +210,6 @@ export default {
 .customer-controls-search {
   margin-right: 1em;
 }
-.customer-controls-filter {
-  /*width: 200px;*/
-}
 .customer-controls-select {
   width: 350px;
   margin-left: 1em;
