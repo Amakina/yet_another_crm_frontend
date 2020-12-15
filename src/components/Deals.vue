@@ -5,6 +5,7 @@
       <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
       </b-pagination>
       <b-input placeholder="Поиск"/>
+      <b-check class="deal-controls-checkbox" @input="getNotPaid">Показать только неоплаченные заказы</b-check>
       <b-button variant="primary" @click="showModal">Добавить договор</b-button>
     </div>
     <b-table 
@@ -21,7 +22,7 @@
       </template>
     </b-table>
     
-    <b-modal ref="add-deal" hide-footer title="Добавить договор" size="lg">
+    <b-modal ref="add-deal" hide-footer title="Добавить договор" size="lg" no-close-on-backdrop>
       <div class="add-deal-modal">
         <form class="add-deal-form" @submit.prevent="onAddSubmit">
           <b-tabs class="add-deal-tabs">
@@ -118,13 +119,15 @@ export default {
         },
         {
           key: 'final_sum',
-          label: 'Сумма'
+          label: 'К оплате'
         },
         {
           key: 'delete',
           label: ''
         }
       ],
+      all: [],
+      notPaid: [],
       update: false,
     }
   },
@@ -156,28 +159,38 @@ export default {
     this.busy = true
     this.$axios.post('/get-deals', { token: this.token })
       .then(({ data }) => {
-        if (!data || !data.length) return
-        let prev = data[0].id
-        let same = []
-        data.forEach((e, i) => {
-          if (e.id === prev && e.service_name) {
-            same.push(e)
-            prev = e.id
-          }
-          else {
-            e.selectedServices = same
-            same = []
-            prev = i + 1 < data.length ? data[i + 1].id : -1
-          }
-        })
-        this.items = data.filter((e) => {
-          return !e.service_name && e.id
-        })
+        this.handleData(data, 'all')
+        this.items = this.clone(this.all)
         this.busy = false
+      })
+      .catch((error) => console.log(error))
+    this.$axios.post('/get-not-paid-deals', { token: this.token })
+      .then(({ data }) => {
+        console.log(data)
+        this.handleData(data, 'notPaid')
       })
       .catch((error) => console.log(error))
   },
   methods: {
+    handleData(data, arrayName) {
+      if (!data || !data.length) return
+      let prev = data[0].id
+      let same = []
+      data.forEach((e, i) => {
+        if (e.id === prev && e.service_name) {
+          same.push(e)
+          prev = e.id
+        }
+        else {
+          e.selectedServices = same
+          same = []
+          prev = i + 1 < data.length ? data[i + 1].id : -1
+        }
+      })
+      this[arrayName] = data.filter((e) => {
+        return !e.service_name && e.id
+      })
+    },
     resetData() {
       this.data = {
         customer_id: null,
@@ -220,6 +233,8 @@ export default {
       if (!this.update) {
         this.$axios.post('/add-deal', fixedData)
           .then(() => {
+            this.notPaid.push(this.data)
+            this.all.push(this.data)
             this.items.push(this.data)
           })
           .catch((error) => console.log(error))
@@ -263,6 +278,16 @@ export default {
           break
         }
       }
+    },
+    getNotPaid(value) {
+      if (value) {
+        this.items = this.clone(this.notPaid.map(e => ({...e, final_sum: e.final_sum - e.paid})))
+        this.fields = this.fields.map(f => (f.key === 'final_sum' ? {...f, label: 'Долг'} : f))
+      }
+      else {
+        this.items = this.clone(this.all)
+        this.fields = this.fields.map(f => (f.key === 'final_sum' ? {...f, label: 'К оплате'} : f))
+      }
     }
   }
 }
@@ -272,6 +297,8 @@ export default {
 .deal-controls {
   width: 100%;
   display: flex;
+  height: calc(1.5em + 0.75rem + 2px);
+  margin-bottom: 1rem;
 }
 h1 {
   margin-bottom: 1em;
@@ -332,5 +359,10 @@ a {
 }
 a:hover {
   color: blue!important;
+}
+.deal-controls-checkbox {
+  width: 350px;
+  margin-right: 1em;
+  margin-left: 1em;
 }
 </style>

@@ -4,6 +4,7 @@
     <div class="customer-controls">
       <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
       </b-pagination>
+      <b-check class="customer-controls-checkbox" @input="getRegulars">Показать постоянных покупателей</b-check>
       <b-input placeholder="Поиск"/>
     </div>
     <b-table 
@@ -81,6 +82,8 @@ export default {
           lebel: 'E-mail',
         }
       ],
+      all: [],
+      regulars: [],
     }
   },
   computed: {
@@ -90,10 +93,17 @@ export default {
   },
   mounted() {
     this.$axios.post('/get-customers', { token: this.token })
-      .then(({ data }) => this.items = data)
+      .then(({ data }) => { this.items = data; this.all = this.items })
+      .catch((error) => console.log(error))
+
+    this.$axios.post('/get-regulars', { token: this.token })
+      .then(({ data }) => { this.regulars = data })
       .catch((error) => console.log(error))
   },
   methods: {
+    clone(o) {
+      return JSON.parse(JSON.stringify(o))
+    },
     hideModal() {
       this.$refs['add-customer'].hide()
     },
@@ -114,6 +124,27 @@ export default {
         })
         .catch((error) => console.log(error))
     },
+    getRegulars(value) {
+      if (value) {
+        this.items = this.regulars.map(e => ({...e, final_sum: e.final_sum - e.paid}))
+        this.fields.push({
+          key: 'num_deals',
+          label: 'К-во сделок'
+        },
+        {
+          key: 'amount',
+          label: 'Общая сумма заказов'
+        },
+        {
+          key: 'deal_date',
+          label: 'Последняя сделка'
+        })
+      }
+      else {
+        this.items = this.all
+        this.fields.splice(7, 3)
+      }
+    }
   }
 }
 </script>
@@ -131,6 +162,11 @@ export default {
   margin-top: 2em;
 }
 .add-customer-buttons button {
+  margin-left: 1em;
+}
+.customer-controls-checkbox {
+  width: 450px;
+  margin-right: 1em;
   margin-left: 1em;
 }
 </style>
