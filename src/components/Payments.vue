@@ -2,10 +2,19 @@
   <div>
     <h1>Подтверждение оплаты</h1>
     <div class="payment-controls">
-      <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
-      </b-pagination>
-      <b-input placeholder="Поиск"/>
-      <b-button variant="primary" @click="showModal">Добавить чек</b-button>
+      <div class="payment-main-controls">
+        <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
+        </b-pagination>
+        <b-button class="payment-controls-add" variant="primary" @click="showModal">Добавить чек</b-button>
+      </div>
+      <div class="payment-sub-controls">
+        <v-select class="payment-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <div class="payment-sub-controls-confirm">
+          <v-select class="payment-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
+          <b-input class="payment-controls-search" placeholder="Поиск"/>
+          <b-button class="payment-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
+        </div>
+      </div>
     </div>
     <b-table 
       striped 
@@ -82,7 +91,17 @@ export default {
       currentPage: 1,
       rows: 0,
       perPage: 5,
-      items: []
+      items: [],
+      search: '',
+      searchField: '',
+      searchFields: [{ key: '№ договора', value: 'deal_id' }, { key: '№ чека', value: 'receipt' }],
+      sortField: '',
+      sortFields: [
+        { key: '№ договора - по возрастнию', value: 'deal_id', dir: 1 }, 
+        { key: '№ договора - по убыванию', value: 'deal_id', dir: 0 }, 
+        { key: 'Сумма - по возрастанию', value: 'sum', dir: 1 }, 
+        { key: 'Сумма - по убыванию', value: 'sum', dir: 0 }
+      ],
     }
   },
   computed: {
@@ -162,12 +181,18 @@ export default {
           break
         }
       }
+    },
+    filterSearch() {
+
     }
   }
 }
 </script>
 
 <style scoped>
+h1 {
+  margin-bottom: 1em;
+}
 .add-check-modal {
   display: flex;
 }
@@ -207,5 +232,53 @@ a {
 }
 a:hover {
   color: blue!important;
+}
+.payment-sub-controls {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  width:100%;
+}
+.payment-sub-controls > div {
+  height: calc(1.5em + 0.75rem + 2px);
+  margin-bottom: 1rem;
+}
+.payment-sub-controls-confirm {
+  display: flex;
+}
+.payment-controls {
+  display: flex;
+}
+.payment-main-controls {
+  display: flex;
+  margin-bottom: 1rem;
+  flex-direction: column;
+}
+.payment-controls-checkbox {
+  /*width: 750px;*/
+  margin-right: 1em;
+}
+.payment-controls-date {
+  /*width: 880px;*/
+  margin-right: 1em;
+}
+.payment-controls-date input {
+  height: calc(1.5em + 0.75rem + 2px);
+}
+.payment-controls-search {
+  margin-right: 1em;
+}
+.payment-controls-filter {
+  /*width: 200px;*/
+}
+.payment-controls-select {
+  width: 350px;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+.payment-controls-sort {
+  width: 300px;
+  margin-left: 1em;
 }
 </style>

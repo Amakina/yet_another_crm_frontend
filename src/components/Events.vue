@@ -2,10 +2,27 @@
   <div>
     <h1>Планы</h1>
     <div class="event-controls">
-      <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
-      </b-pagination>
-      <b-input placeholder="Поиск"/>
-      <b-button variant="primary" @click="showModal">Добавить событие</b-button>
+      <div class="event-main-controls">
+        <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
+        </b-pagination>
+        <b-button class="event-controls-add" variant="primary" @click="showModal">Добавить договор</b-button>
+      </div>
+      <div class="event-sub-controls">
+        <date-picker 
+          class="event-controls-date" 
+          v-model="filterDate" 
+          placeholder="Выберите период" 
+          range type="date" 
+          valueType="format" 
+          format="DD.MM.YYYY"
+        />
+        <v-select class="event-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <div class="event-sub-controls-confirm">
+          <v-select class="event-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
+          <b-input class="event-controls-search" placeholder="Поиск"/>
+          <b-button class="event-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
+        </div>
+      </div>
     </div>
     <b-table 
       striped 
@@ -75,6 +92,15 @@ export default {
           key: 'delete',
           label: ''
         }
+      ],
+      filterDate: '',
+      search: '',
+      searchField: '',
+      searchFields: [{ key: 'Ответственный', value: 'responsible_id' }, { key: 'Описание', value: 'description' }],
+      sortField: '',
+      sortFields: [
+        { key: 'Дата - по возрастнию', value: 'date', dir: 1 }, 
+        { key: 'Дата - по убыванию', value: 'date', dir: 0 }
       ],
     }
   },
@@ -152,12 +178,67 @@ export default {
           break
         }
       }
+    },
+    filterSearch() {
+      
     }
   }
 }
 </script>
 
 <style scoped>
+
+.event-sub-controls {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+.event-sub-controls > div {
+  height: calc(1.5em + 0.75rem + 2px);
+  margin-bottom: 1rem;
+}
+.event-sub-controls-confirm {
+  display: flex;
+}
+.event-controls {
+  display: flex;
+}
+.event-main-controls {
+  display: flex;
+  height: calc(1.5em + 0.75rem + 2px);
+  margin-bottom: 1rem;
+  flex-direction: column;
+}
+.event-controls-checkbox {
+  /*width: 750px;*/
+  margin-right: 1em;
+}
+.event-controls-date {
+  width: 200px;
+  margin-right: 1em;
+}
+.event-controls-date input {
+  height: calc(1.5em + 0.75rem + 2px);
+}
+.event-controls-search {
+  margin-right: 1em;
+}
+.event-controls-filter {
+  /*width: 200px;*/
+}
+.event-controls-select {
+  width: 400px;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+.event-controls-sort {
+  width: 250px;
+}
+h1 {
+  margin-bottom: 1em;
+}
 .add-event-modal {
   display: flex;
 }

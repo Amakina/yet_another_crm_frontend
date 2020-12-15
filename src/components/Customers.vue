@@ -2,10 +2,19 @@
   <div>
     <h1>Заказчики</h1>
     <div class="customer-controls">
-      <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
-      </b-pagination>
-      <b-check class="customer-controls-checkbox" @input="getRegulars">Показать постоянных покупателей</b-check>
-      <b-input placeholder="Поиск"/>
+      <div class="customer-main-controls">
+        <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
+        </b-pagination>
+      </div>
+      <div class="customer-sub-controls">
+        <b-check class="customer-controls-checkbox" @input="getRegulars">Показать постоянных покупателей</b-check>
+        <v-select class="customer-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <div class="customer-sub-controls-confirm">
+          <v-select class="customer-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
+          <b-input class="customer-controls-search" placeholder="Поиск"/>
+          <b-button class="customer-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
+        </div>
+      </div>
     </div>
     <b-table 
       striped 
@@ -84,6 +93,19 @@ export default {
       ],
       all: [],
       regulars: [],
+      search: '',
+      searchField: '',
+      searchFields: [
+        { key: 'Название компании', value: 'name' }, 
+        { key: 'ОГРН', value: 'ogrn' }, 
+        { key: 'ИНН', value: 'inn' },
+        { key: 'Адрес', value: 'address' }
+      ],
+      sortField: '',
+      sortFields: [
+        { key: 'Название компании - по возрастнию', value: 'name', dir: 1 }, 
+        { key: 'Название компании - по убыванию', value: 'name', dir: 0 },
+      ],
     }
   },
   computed: {
@@ -150,6 +172,58 @@ export default {
 </script>
 
 <style scoped>
+
+.customer-sub-controls {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+.customer-sub-controls > div {
+  height: calc(1.5em + 0.75rem + 2px);
+  margin-bottom: 1rem;
+}
+.customer-sub-controls-confirm {
+  display: flex;
+}
+.customer-controls {
+  display: flex;
+}
+.customer-main-controls {
+  display: flex;
+  height: calc(1.5em + 0.75rem + 2px);
+  margin-bottom: 1rem;
+  flex-direction: column;
+}
+.customer-controls-checkbox {
+  width: 200px;
+  margin-left: 1em;
+}
+.customer-controls-date {
+  /*width: 880px;*/
+  margin-right: 1em;
+}
+.customer-controls-date input {
+  height: calc(1.5em + 0.75rem + 2px);
+}
+.customer-controls-search {
+  margin-right: 1em;
+}
+.customer-controls-filter {
+  /*width: 200px;*/
+}
+.customer-controls-select {
+  width: 350px;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+.customer-controls-sort {
+  width: 350px;
+}
+h1 {
+  margin-bottom: 1em;
+}
 .customer-controls {
   display: flex;
 }
@@ -162,11 +236,6 @@ export default {
   margin-top: 2em;
 }
 .add-customer-buttons button {
-  margin-left: 1em;
-}
-.customer-controls-checkbox {
-  width: 450px;
-  margin-right: 1em;
   margin-left: 1em;
 }
 </style>

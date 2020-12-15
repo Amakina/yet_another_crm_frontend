@@ -2,11 +2,28 @@
   <div>
     <h1>Заказы</h1>
     <div class="deal-controls">
-      <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
-      </b-pagination>
-      <b-input placeholder="Поиск"/>
-      <b-check class="deal-controls-checkbox" @input="getNotPaid">Показать только неоплаченные заказы</b-check>
-      <b-button variant="primary" @click="showModal">Добавить договор</b-button>
+      <div class="deal-main-controls">
+        <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
+        </b-pagination>
+        <b-button class="deal-controls-add" variant="primary" @click="showModal">Добавить договор</b-button>
+      </div>
+      <div class="deal-sub-controls">
+        <b-check class="deal-controls-checkbox" @input="getNotPaid">Показать только неоплаченные заказы</b-check>
+        <date-picker 
+          class="deal-controls-date" 
+          v-model="filterDate" 
+          placeholder="Выберите период" 
+          range type="date" 
+          valueType="format" 
+          format="DD.MM.YYYY"
+        />
+        <v-select class="deal-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <div class="deal-sub-controls-confirm">
+          <v-select class="deal-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
+          <b-input class="deal-controls-search" placeholder="Поиск"/>
+          <b-button class="deal-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
+        </div>
+      </div>
     </div>
     <b-table 
       striped 
@@ -84,13 +101,24 @@ export default {
         deal_date: '',
         finish_date: '',
       },
+      filterDate: '',
+      search: '',
+      searchField: '',
+      searchFields: [{ key: '№ договора', value: 'deal_id' }, { key: 'Статус', value: 'status' }, { key: 'Заказчик', value: 'customer_name' }],
+      sortField: '',
+      sortFields: [
+        { key: '№ договора - по возрастнию', value: 'deal_id', dir: 1 }, 
+        { key: '№ договора - по убыванию', value: 'deal_id', dir: 0 }, 
+        { key: 'К оплате - по возрастанию', value: 'final_sum', dir: 1 }, 
+        { key: 'К оплате - по убыванию', value: 'final_sum', dir: 0 }
+      ],
       selectedCustomers: null,
       selectedServices: [],
       customers: [],
       services: [],
       busy: true,
       currentPage: 1,
-      perPage: 5,
+      perPage: 10,
       items: [],
       fields: [
         {
@@ -166,7 +194,6 @@ export default {
       .catch((error) => console.log(error))
     this.$axios.post('/get-not-paid-deals', { token: this.token })
       .then(({ data }) => {
-        console.log(data)
         this.handleData(data, 'notPaid')
       })
       .catch((error) => console.log(error))
@@ -288,24 +315,70 @@ export default {
         this.items = this.clone(this.all)
         this.fields = this.fields.map(f => (f.key === 'final_sum' ? {...f, label: 'К оплате'} : f))
       }
+    },
+    filterSearch() {
+
     }
   }
 }
 </script>
 
 <style scoped>
-.deal-controls {
+.deal-sub-controls {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
   width: 100%;
+}
+.deal-sub-controls > div {
+  height: calc(1.5em + 0.75rem + 2px);
+  margin-bottom: 1rem;
+}
+.deal-sub-controls-confirm {
+  display: flex;
+}
+.deal-controls {
+  display: flex;
+}
+.deal-main-controls {
   display: flex;
   height: calc(1.5em + 0.75rem + 2px);
   margin-bottom: 1rem;
+  flex-direction: column;
+}
+.deal-controls-checkbox {
+  /*width: 750px;*/
+  margin-right: 1em;
+}
+.deal-controls-date {
+  /*width: 880px;*/
+  margin-right: 1em;
+}
+.deal-controls-date input {
+  height: calc(1.5em + 0.75rem + 2px);
+}
+.deal-controls-search {
+  margin-right: 1em;
+}
+.deal-controls-filter {
+  /*width: 200px;*/
+}
+.deal-controls-select {
+  width: 350px;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+.deal-controls-sort {
+  width: 300px;
+  margin-right: 1em;
 }
 h1 {
   margin-bottom: 1em;
 }
-.deal-controls button {
+.deal-controls .deal-controls-add {
   margin-bottom: 1rem;
-  min-width: 200px;
+  min-width: 165px;
   height: calc(1.5em + 0.75rem + 2px);
   justify-self: flex-end;
 }
@@ -359,10 +432,5 @@ a {
 }
 a:hover {
   color: blue!important;
-}
-.deal-controls-checkbox {
-  width: 350px;
-  margin-right: 1em;
-  margin-left: 1em;
 }
 </style>
