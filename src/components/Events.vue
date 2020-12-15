@@ -10,16 +10,16 @@
       <div class="event-sub-controls">
         <date-picker 
           class="event-controls-date" 
-          v-model="filterDate" 
+          v-model="extra.filterDate" 
           placeholder="Выберите период" 
           range type="date" 
           valueType="format" 
           format="DD.MM.YYYY"
         />
-        <v-select class="event-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <v-select class="event-controls-sort" v-model="extra.sortField" :options="extra.sortFields" label="key" placeholder="Сортировать по"/>
         <div class="event-sub-controls-confirm">
-          <v-select class="event-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
-          <b-input class="event-controls-search" placeholder="Поиск"/>
+          <v-select class="event-controls-select" v-model="extra.searchField" :options="extra.searchFields" label="key" placeholder="Поиск по"/>
+          <b-input v-model="extra.search" class="event-controls-search" placeholder="Поиск"/>
           <b-button class="event-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
         </div>
       </div>
@@ -93,15 +93,17 @@ export default {
           label: ''
         }
       ],
-      filterDate: '',
-      search: '',
-      searchField: '',
-      searchFields: [{ key: 'Ответственный', value: 'responsible_id' }, { key: 'Описание', value: 'description' }],
-      sortField: '',
-      sortFields: [
-        { key: 'Дата - по возрастнию', value: 'date', dir: 1 }, 
-        { key: 'Дата - по убыванию', value: 'date', dir: 0 }
-      ],
+      extra: {
+        filterDate: '',
+        search: '',
+        searchField: '',
+        searchFields: [{ key: 'Ответственный', value: 'responsible_id' }, { key: 'Описание', value: 'description' }],
+        sortField: '',
+        sortFields: [
+          { key: 'Дата - по возрастнию', value: 'date', dir: 1 }, 
+          { key: 'Дата - по убыванию', value: 'date', dir: 0 }
+        ],
+      }
     }
   },
   computed: {
@@ -180,7 +182,11 @@ export default {
       }
     },
     filterSearch() {
-
+      this.$axios.post('/filter-query', {...this.extra, table: 'events', handler: 'events', token: this.token })
+      .then(({data}) => {
+        this.items = data
+      })
+      .catch((error) => console.log(error))
     }
   }
 }

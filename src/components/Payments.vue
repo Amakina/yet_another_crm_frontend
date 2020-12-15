@@ -8,10 +8,10 @@
         <b-button class="payment-controls-add" variant="primary" @click="showModal">Добавить чек</b-button>
       </div>
       <div class="payment-sub-controls">
-        <v-select class="payment-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <v-select class="payment-controls-sort" v-model="extra.sortField" :options="extra.sortFields" label="key" placeholder="Сортировать по"/>
         <div class="payment-sub-controls-confirm">
-          <v-select class="payment-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
-          <b-input class="payment-controls-search" placeholder="Поиск"/>
+          <v-select class="payment-controls-select" v-model="extra.searchField" :options="extra.searchFields" label="key" placeholder="Поиск по"/>
+          <b-input v-model="extra.search" class="payment-controls-search" placeholder="Поиск"/>
           <b-button class="payment-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
         </div>
       </div>
@@ -92,16 +92,18 @@ export default {
       rows: 0,
       perPage: 5,
       items: [],
-      search: '',
-      searchField: '',
-      searchFields: [{ key: '№ договора', value: 'deal_id' }, { key: '№ чека', value: 'receipt' }],
-      sortField: '',
-      sortFields: [
-        { key: '№ договора - по возрастнию', value: 'deal_id', dir: 1 }, 
-        { key: '№ договора - по убыванию', value: 'deal_id', dir: 0 }, 
-        { key: 'Сумма - по возрастанию', value: 'sum', dir: 1 }, 
-        { key: 'Сумма - по убыванию', value: 'sum', dir: 0 }
-      ],
+      extra: {
+        search: '',
+        searchField: '',
+        searchFields: [{ key: '№ договора', value: 'deal_id' }, { key: '№ чека', value: 'receipt' }],
+        sortField: '',
+        sortFields: [
+          { key: '№ договора - по возрастнию', value: 'deal_id', dir: 1 }, 
+          { key: '№ договора - по убыванию', value: 'deal_id', dir: 0 }, 
+          { key: 'Сумма - по возрастанию', value: 'sum', dir: 1 }, 
+          { key: 'Сумма - по убыванию', value: 'sum', dir: 0 }
+        ],
+      }
     }
   },
   computed: {
@@ -183,7 +185,12 @@ export default {
       }
     },
     filterSearch() {
-
+      this.$axios.post('/filter-query', {...this.extra, table: 'payments', handler: 'payments', token: this.token })
+      .then(({data}) => {
+        console.log(data)
+        this.items = data
+      })
+      .catch((error) => console.log(error))
     }
   }
 }

@@ -8,10 +8,10 @@
         <b-button class="deal-controls-add" variant="primary" @click="showModal">Добавить услугу</b-button>
       </div>
       <div class="deal-sub-controls">
-        <v-select class="deal-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <v-select class="deal-controls-sort" v-model="extra.sortField" :options="extra.sortFields" label="key" placeholder="Сортировать по"/>
         <div class="deal-sub-controls-confirm">
-          <v-select class="deal-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
-          <b-input class="deal-controls-search" placeholder="Поиск"/>
+          <v-select class="deal-controls-select" v-model="extra.searchField" :options="extra.searchFields" label="key" placeholder="Поиск по"/>
+          <b-input v-model="extra.search" class="deal-controls-search" placeholder="Поиск"/>
           <b-button class="deal-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
         </div>
       </div>
@@ -92,18 +92,20 @@ export default {
       selectedRecord: null,
       update: false,
       error: '',
-      search: '',
-      searchField: '',
-      searchFields: [{ key: 'Код', value: 'code' }, { key: 'Название', value: 'name' }, { key: 'Описание', value: 'description' }],
-      sortField: '',
-      sortFields: [
-        { key: 'Код - по возрастнию', value: 'code', dir: 1 }, 
-        { key: 'Код - по убыванию', value: 'code', dir: 0 }, 
-        { key: 'Название - по возрастанию', value: 'name', dir: 1 }, 
-        { key: 'Название - по убыванию', value: 'name', dir: 0 },
-        { key: 'Цена - по возрастанию', value: 'price', dir: 1 }, 
-        { key: 'Цена - по убыванию', value: 'price', dir: 0 }
-      ],
+      extra: {
+        search: '',
+        searchField: '',
+        searchFields: [{ key: 'Код', value: 'code' }, { key: 'Название', value: 'name' }, { key: 'Описание', value: 'description' }],
+        sortField: '',
+        sortFields: [
+          { key: 'Код - по возрастнию', value: 'code', dir: 1 }, 
+          { key: 'Код - по убыванию', value: 'code', dir: 0 }, 
+          { key: 'Название - по возрастанию', value: 'name', dir: 1 }, 
+          { key: 'Название - по убыванию', value: 'name', dir: 0 },
+          { key: 'Цена - по возрастанию', value: 'price', dir: 1 }, 
+          { key: 'Цена - по убыванию', value: 'price', dir: 0 }
+        ],
+      }
     }
   },
   computed: {
@@ -186,7 +188,11 @@ export default {
       }
     },
     filterSearch() {
-
+       this.$axios.post('/filter-query', {...this.extra, table: 'services', handler: 'services', token: this.token })
+        .then(({data}) => {
+          this.items = data
+        })
+        .catch((error) => console.log(error))
     }
   }
 }

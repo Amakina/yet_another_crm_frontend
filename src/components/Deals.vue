@@ -11,16 +11,16 @@
         <b-check class="deal-controls-checkbox" @input="getNotPaid">Показать только неоплаченные заказы</b-check>
         <date-picker 
           class="deal-controls-date" 
-          v-model="filterDate" 
+          v-model="extra.filterDate" 
           placeholder="Выберите период" 
           range type="date" 
           valueType="format" 
           format="DD.MM.YYYY"
         />
-        <v-select class="deal-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <v-select class="deal-controls-sort" v-model="extra.sortField" :options="extra.sortFields" label="key" placeholder="Сортировать по"/>
         <div class="deal-sub-controls-confirm">
-          <v-select class="deal-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
-          <b-input class="deal-controls-search" placeholder="Поиск"/>
+          <v-select class="deal-controls-select" v-model="extra.searchField" :options="extra.searchFields" label="key" placeholder="Поиск по"/>
+          <b-input v-model="extra.search" class="deal-controls-search" placeholder="Поиск"/>
           <b-button class="deal-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
         </div>
       </div>
@@ -101,17 +101,19 @@ export default {
         deal_date: '',
         finish_date: '',
       },
-      filterDate: '',
-      search: '',
-      searchField: '',
-      searchFields: [{ key: '№ договора', value: 'deal_id' }, { key: 'Статус', value: 'status' }, { key: 'Заказчик', value: 'customer_name' }],
-      sortField: '',
-      sortFields: [
-        { key: '№ договора - по возрастнию', value: 'deal_id', dir: 1 }, 
-        { key: '№ договора - по убыванию', value: 'deal_id', dir: 0 }, 
-        { key: 'К оплате - по возрастанию', value: 'final_sum', dir: 1 }, 
-        { key: 'К оплате - по убыванию', value: 'final_sum', dir: 0 }
-      ],
+      extra: {
+        filterDate: '',
+        search: '',
+        searchField: '',
+        searchFields: [{ key: '№ договора', value: 'deal_id' }, { key: 'Статус', value: 'status' }, { key: 'Заказчик', value: 'customer_name' }],
+        sortField: '',
+        sortFields: [
+          { key: '№ договора - по возрастнию', value: 'deal_id', dir: 1 }, 
+          { key: '№ договора - по убыванию', value: 'deal_id', dir: 0 }, 
+          { key: 'К оплате - по возрастанию', value: 'final_sum', dir: 1 }, 
+          { key: 'К оплате - по убыванию', value: 'final_sum', dir: 0 }
+        ],
+      },
       selectedCustomers: null,
       selectedServices: [],
       customers: [],
@@ -317,7 +319,11 @@ export default {
       }
     },
     filterSearch() {
-
+      this.$axios.post('/filter-query', {...this.extra, table: 'deals_view', handler: 'deals', token: this.token })
+        .then(({data}) => {
+          console.log(data)
+        })
+        .catch((error) => console.log(error))
     }
   }
 }

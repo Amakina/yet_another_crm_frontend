@@ -8,10 +8,10 @@
       </div>
       <div class="customer-sub-controls">
         <b-check class="customer-controls-checkbox" @input="getRegulars">Показать постоянных покупателей</b-check>
-        <v-select class="customer-controls-sort" v-model="sortField" :options="sortFields" label="key" placeholder="Сортировать по"/>
+        <v-select class="customer-controls-sort" v-model="extra.sortField" :options="extra.sortFields" label="key" placeholder="Сортировать по"/>
         <div class="customer-sub-controls-confirm">
-          <v-select class="customer-controls-select" v-model="searchField" :options="searchFields" label="key" placeholder="Поиск по"/>
-          <b-input class="customer-controls-search" placeholder="Поиск"/>
+          <v-select class="customer-controls-select" v-model="extra.searchField" :options="extra.searchFields" label="key" placeholder="Поиск по"/>
+          <b-input v-model="extra.search" class="customer-controls-search" placeholder="Поиск"/>
           <b-button class="customer-controls-filter" variant="primary" @click="filterSearch">Применить</b-button>
         </div>
       </div>
@@ -93,19 +93,21 @@ export default {
       ],
       all: [],
       regulars: [],
-      search: '',
-      searchField: '',
-      searchFields: [
-        { key: 'Название компании', value: 'name' }, 
-        { key: 'ОГРН', value: 'ogrn' }, 
-        { key: 'ИНН', value: 'inn' },
-        { key: 'Адрес', value: 'address' }
-      ],
-      sortField: '',
-      sortFields: [
-        { key: 'Название компании - по возрастнию', value: 'name', dir: 1 }, 
-        { key: 'Название компании - по убыванию', value: 'name', dir: 0 },
-      ],
+      extra: {
+        search: '',
+        searchField: '',
+        searchFields: [
+          { key: 'Название компании', value: 'name' }, 
+          { key: 'ОГРН', value: 'ogrn' }, 
+          { key: 'ИНН', value: 'inn' },
+          { key: 'Адрес', value: 'address' }
+        ],
+        sortField: '',
+        sortFields: [
+          { key: 'Название компании - по возрастнию', value: 'name', dir: 1 }, 
+          { key: 'Название компании - по убыванию', value: 'name', dir: 0 },
+        ],
+      }
     }
   },
   computed: {
@@ -166,6 +168,13 @@ export default {
         this.items = this.all
         this.fields.splice(7, 3)
       }
+    },
+    filterSearch() {
+       this.$axios.post('/filter-query', {...this.extra, table: 'customers', handler: 'customers', token: this.token })
+        .then(({data}) => {
+          console.log(data)
+        })
+        .catch((error) => console.log(error))
     }
   }
 }
@@ -197,7 +206,7 @@ export default {
   flex-direction: column;
 }
 .customer-controls-checkbox {
-  width: 200px;
+  width: 300px;
   margin-left: 1em;
 }
 .customer-controls-date {
@@ -211,7 +220,7 @@ export default {
   margin-right: 1em;
 }
 .customer-controls-select {
-  width: 350px;
+  width: 450px;
   margin-left: 1em;
   margin-right: 1em;
 }
