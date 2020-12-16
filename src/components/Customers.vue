@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import { mutations } from '../store'
 export default {
   data() {
     return {
@@ -116,16 +117,16 @@ export default {
     },
     rows() {
       return this.items.length
-    }
+    },
   },
   mounted() {
     this.$axios.post('/get-customers', { token: this.token })
       .then(({ data }) => { this.items = data; this.all = this.items })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
 
     this.$axios.post('/get-regulars', { token: this.token })
       .then(({ data }) => { this.regulars = data })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
   },
   methods: {
     clone(o) {
@@ -149,7 +150,7 @@ export default {
           })
           this.selectedRecord = null
         })
-        .catch((error) => console.log(error))
+        .catch((error) => mutations.setError(error.response.data))
     },
     getRegulars(value) {
       if (value) {
@@ -177,17 +178,15 @@ export default {
       .then(({data}) => {
         this.all = data
         if (!this.showRegulars) this.items = this.all
-        console.log(data)
       })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
       
       this.$axios.post('/filter-query', {...this.extra, table: 'customers', handler: 'customers', method: 'Regulars', token: this.token })
       .then(({data}) => {
         this.regulars = data
         if (this.showRegulars) this.items = this.regulars
-        console.log(data)
       })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
   }
   }
 }

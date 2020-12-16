@@ -8,6 +8,9 @@
     <router-link to="/create-user">
       <b-icon icon="person-plus" variant="primary"></b-icon>
     </router-link>
+    <router-link to="/edit-user">
+      <b-icon icon="diagram3" variant="primary"></b-icon>
+    </router-link>
   </aside>
 </template>
 

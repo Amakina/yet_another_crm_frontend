@@ -30,7 +30,7 @@
       </template>
     </b-table>
     
-    <b-modal ref="add-check" hide-footer title="Добавить чек">
+    <b-modal ref="add-check" hide-footer :title="modal.title">
       <form class="add-check-form" @submit.prevent="onAddSubmit">
         <v-select v-model="data.selected" :options="options" label="deal_id" placeholder="Выберите договор" />
         <b-input v-model="data.receipt" placeholder="Номер чека"/>
@@ -41,7 +41,7 @@
         <b-input v-model="data.sum" placeholder="Сумма оплаты"/>
 
         <div class="add-check-buttons">
-          <b-button type="confirm" variant="primary" @click="hideModal">Добавить</b-button>
+          <b-button type="confirm" variant="primary" @click="hideModal">{{modal.button}}</b-button>
           <b-button type="reset" variant="primary" @click="hideModal">Отмена</b-button>
         </div>
       </form>
@@ -51,6 +51,7 @@
 
 
 <script>
+import { mutations } from '../store'
 export default {
   data() {
     return {
@@ -103,23 +104,30 @@ export default {
           { key: 'Сумма - по возрастанию', value: 'sum', dir: 1 }, 
           { key: 'Сумма - по убыванию', value: 'sum', dir: 0 }
         ],
-      }
+      },
+      update: false,
     }
   },
   computed: {
     token() {
       return window.localStorage.getItem('token') || {}
-    }
+    },
+    modal() {
+      return {
+        button: this.update ? 'Обновить' : 'Добавить',
+        title: this.update ? 'Обновить чек' : 'Добавить чек',
+      }
+    },
   },
   mounted() {
     this.busy = true
     this.$axios.post('/get-payments', { token: this.token })
       .then(({ data }) =>  this.items = data)
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
 
     this.$axios.post('/get-deals', { token: this.token })
     .then(({ data }) =>  this.options = data.filter(d => d.id && !d.service_name))
-    .catch((error) => console.log(error))
+    .catch((error) => mutations.setError(error.response.data))
   },
   methods: {
     resetData() {
@@ -151,7 +159,7 @@ export default {
           .then(() => {
             this.items.push({ ...this.data, deal_id: this.data.selected.deal_id })
           })
-          .catch((error) => console.log(error))
+          .catch((error) => mutations.setError(error.response.data))
         return
       }
 
@@ -162,7 +170,7 @@ export default {
             })
             this.selectedRecord = null
           })
-          .catch((error) => console.log(error))
+          .catch((error) => mutations.setError(error.response.data))
     },
     onRowClick(record) {
       this.update = true
@@ -179,7 +187,7 @@ export default {
             .then(() => {
               this.items.splice(i, 1)
             })
-            .catch((error) => console.log(error))
+            .catch((error) => mutations.setError(error.response.data))
           break
         }
       }
@@ -189,7 +197,7 @@ export default {
       .then(({data}) => {
         this.items = data
       })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
     }
   }
 }

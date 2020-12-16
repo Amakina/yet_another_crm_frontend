@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import { mutations } from '../store'
 
 export default {
   data() {
@@ -129,7 +130,7 @@ export default {
         this.items = data
         this.busy = false
       })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
   },
   methods: {
     resetData() {
@@ -155,7 +156,7 @@ export default {
           .then(() => {
             this.items.push(this.data)
           })
-          .catch((error) => console.log(error))
+          .catch((error) => mutations.setError(error.response.data))
         return
       }
       
@@ -166,7 +167,7 @@ export default {
           })
           this.selectedRecord = null
         })
-        .catch((error) => console.log(error))
+        .catch((error) => mutations.setError(error.response.data))
     },
     onRowClick(record) {
       this.update = true
@@ -182,7 +183,7 @@ export default {
             .then(() => {
               this.items.splice(i, 1)
             })
-            .catch((error) => console.log(error))
+            .catch((error) => mutations.setError(error.response.data))
           break
         }
       }
@@ -192,7 +193,7 @@ export default {
         .then(({data}) => {
           this.items = data
         })
-        .catch((error) => console.log(error))
+        .catch((error) => mutations.setError(error.response.data))
     }
   }
 }

@@ -38,7 +38,7 @@
       </template>
     </b-table>
     
-    <b-modal ref="add-event" hide-footer title="Добавить чек">
+    <b-modal ref="add-event" hide-footer :title="modal.title">
       <form class="add-event-form" @submit.prevent="onAddSubmit">
         <div class="add-event-date">
           <label>Дата события:</label>
@@ -48,7 +48,7 @@
         <v-select v-model="data.selected" :options="workers" label="name" placeholder="Нет ответственного"/>
 
         <div class="add-event-buttons">
-          <b-button type="confirm" variant="primary" @click="hideModal">Добавить</b-button>
+          <b-button type="confirm" variant="primary" @click="hideModal">{{modal.button}}</b-button>
           <b-button type="reset" variant="primary" @click="hideModal">Отмена</b-button>
         </div>
       </form>
@@ -57,6 +57,7 @@
 </template>
 
 <script>
+import { mutations } from '../store'
 export default {
   data() {
     return {
@@ -103,22 +104,29 @@ export default {
           { key: 'Дата - по возрастнию', value: 'date', dir: 1 }, 
           { key: 'Дата - по убыванию', value: 'date', dir: 0 }
         ],
-      }
+      },
+      update: false,
     }
   },
   computed: {
     token() {
       return window.localStorage.getItem('token') || {}
-    }
+    },
+    modal() {
+      return {
+        button: this.update ? 'Обновить' : 'Добавить',
+        title: this.update ? 'Обновить событие' : 'Добавить событие',
+      }
+    },
   },
   mounted() {
     this.$axios.post('/get-events', { token: this.token })
       .then(({ data }) => this.items = data)
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
 
     this.$axios.post('/get-workers', { token: this.token })
       .then(({ data }) => this.workers = data)
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
   },
   methods: {
     resetData() {
@@ -147,8 +155,10 @@ export default {
       const fixedDate = this.formatDate(this.data.date)
       if (!this.update) {
         this.$axios.post('/add-event', { ...this.data, date: fixedDate, token: this.token })
-          .then(() => console.log('success'))
-          .catch((error) => console.log(error))
+          .then(() => {
+            this.items.push(this.data)
+          })
+          .catch((error) => mutations.setError(error.response.data))
         return
       }
 
@@ -159,7 +169,7 @@ export default {
           })
           this.selectedRecord = null
         })
-        .catch((error) => console.log(error))
+        .catch((error) => mutations.setError(error.response.data))
     },
     onRowClick(record) {
       this.update = true
@@ -176,7 +186,7 @@ export default {
             .then(() => {
               this.items.splice(i, 1)
             })
-            .catch((error) => console.log(error))
+            .catch((error) => mutations.setError(error.response.data))
           break
         }
       }
@@ -186,7 +196,7 @@ export default {
       .then(({data}) => {
         this.items = data
       })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
     }
   }
 }

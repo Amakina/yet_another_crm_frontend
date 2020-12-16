@@ -39,12 +39,12 @@
       </template>
     </b-table>
     
-    <b-modal ref="add-deal" hide-footer title="Добавить договор" size="lg" no-close-on-backdrop>
+    <b-modal ref="add-deal" hide-footer :title="modal.title" size="lg" no-close-on-backdrop>
       <div class="add-deal-modal">
         <form class="add-deal-form" @submit.prevent="onAddSubmit">
           <b-tabs class="add-deal-tabs">
             <b-tab title="Добавить заказчика" v-if="!update">
-              <b-input v-model="data.name" placeholder="Ф.И.О. заказчика" />
+              <b-input v-model="data.name" placeholder="Имя заказчика" />
               <b-input v-model="data.ogrn" placeholder="ОГРН заказчика" />
               <b-input v-model="data.inn" placeholder="ИНН заказчика" />
               <b-input v-model="data.address" placeholder="Адрес заказчика" />
@@ -68,7 +68,7 @@
           </div>
 
           <div class="add-deal-buttons">
-            <b-button type="confirm" variant="primary" @click="hideModal">Добавить</b-button>
+            <b-button type="confirm" variant="primary" @click="hideModal">{{modal.button}}</b-button>
             <b-button type="reset" variant="primary" @click="hideModal">Отмена</b-button>
           </div>
         </form>
@@ -86,6 +86,7 @@
 </template>
 
 <script>
+import { mutations } from '../store'
 export default {
   data() {
     return {
@@ -168,7 +169,13 @@ export default {
     },
     rows() {
       return this.items.length
-    }
+    },
+    modal() {
+      return {
+        button: this.update ? 'Обновить' : 'Добавить',
+        title: this.update ? 'Обновить договор' : 'Добавить договор',
+      }
+    },
   },
   mounted() {
     this.$axios.post('/get-customers', { token: this.token })
@@ -194,12 +201,12 @@ export default {
         this.items = this.clone(this.all)
         this.busy = false
       })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
     this.$axios.post('/get-not-paid-deals', { token: this.token })
       .then(({ data }) => {
         this.handleData(data, 'notPaid')
       })
-      .catch((error) => console.log(error))
+      .catch((error) => mutations.setError(error.response.data))
   },
   methods: {
     handleData(data, arrayName) {

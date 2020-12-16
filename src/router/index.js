@@ -45,6 +45,15 @@ const routes = [
     }
   },
   {
+    path: '/edit-user',
+    name: 'Edit User',
+    component: () => import('../views/EditUser.vue'),
+    meta: {
+      requiresAuth: true,
+      is_admin: true,
+    }
+  },
+  {
     path: '/logout',
     name: 'Logout',
     meta: {

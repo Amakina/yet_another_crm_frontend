@@ -1,11 +1,11 @@
 import Vue from 'vue'
 
 export const store = Vue.observable({
-  token: null
+  error: null
 })
 
 export const mutations = {
-  setToken(token) {
-    store.token = token
+  setError(error) {
+    store.error = error
   }
 }
