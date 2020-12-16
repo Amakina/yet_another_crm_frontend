@@ -5,6 +5,9 @@
     <b-icon icon="credit-card" variant="primary" @click="onButtonClick('payments')"></b-icon>
     <b-icon icon="calendar-event" variant="primary" @click="onButtonClick('events')"></b-icon>
     <b-icon icon="people" variant="primary" @click="onButtonClick('customers')"></b-icon>
+    <router-link to="/create-user">
+      <b-icon icon="person-plus" variant="primary"></b-icon>
+    </router-link>
   </aside>
 </template>
 
@@ -24,18 +27,19 @@ export default {
   left: 0;
   top: 0;
   width: 86px;
-  height: 100vh;
+  min-height: 100vh;
+  height: 100%;
   padding: 1em;
   color: white;
-  border-right: 1px solid black;
+  border-right: 2px solid #dee2e6;
 }
-.side-panel > svg {
+.side-panel svg {
   width: 50px;
   height: 50px;
   margin-top: 2em;
   cursor: pointer;
 }
-.side-panel > svg:hover {
+.side-panel svg:hover {
   fill:blue;
 }
 </style>

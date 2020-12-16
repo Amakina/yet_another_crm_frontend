@@ -7,7 +7,7 @@
         </b-pagination>
       </div>
       <div class="customer-sub-controls">
-        <b-check class="customer-controls-checkbox" @input="getRegulars">Показать постоянных покупателей</b-check>
+        <b-check v-model="showRegulars" class="customer-controls-checkbox" @input="getRegulars">Показать постоянных покупателей</b-check>
         <v-select class="customer-controls-sort" v-model="extra.sortField" :options="extra.sortFields" label="key" placeholder="Сортировать по"/>
         <div class="customer-sub-controls-confirm">
           <v-select class="customer-controls-select" v-model="extra.searchField" :options="extra.searchFields" label="key" placeholder="Поиск по"/>
@@ -58,7 +58,6 @@ export default {
       },
       busy: true,
       currentPage: 1,
-      rows: 0,
       perPage: 5,
       items: [],
       fields: [
@@ -93,6 +92,7 @@ export default {
       ],
       all: [],
       regulars: [],
+      showRegulars: false,
       extra: {
         search: '',
         searchField: '',
@@ -113,6 +113,9 @@ export default {
   computed: {
     token() {
       return window.localStorage.getItem('token') || {}
+    },
+    rows() {
+      return this.items.length
     }
   },
   mounted() {
@@ -170,12 +173,22 @@ export default {
       }
     },
     filterSearch() {
-       this.$axios.post('/filter-query', {...this.extra, table: 'customers', handler: 'customers', token: this.token })
-        .then(({data}) => {
-          console.log(data)
-        })
-        .catch((error) => console.log(error))
-    }
+      this.$axios.post('/filter-query', {...this.extra, table: 'customers', handler: 'customers', token: this.token })
+      .then(({data}) => {
+        this.all = data
+        if (!this.showRegulars) this.items = this.all
+        console.log(data)
+      })
+      .catch((error) => console.log(error))
+      
+      this.$axios.post('/filter-query', {...this.extra, table: 'customers', handler: 'customers', method: 'Regulars', token: this.token })
+      .then(({data}) => {
+        this.regulars = data
+        if (this.showRegulars) this.items = this.regulars
+        console.log(data)
+      })
+      .catch((error) => console.log(error))
+  }
   }
 }
 </script>

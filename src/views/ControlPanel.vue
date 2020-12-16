@@ -53,7 +53,7 @@ export default {
 <style scoped>
 .control-panel {
   position: relative;
-  border-top: 1px solid black;
+  border-top: 2px solid #dee2e6;
 }
 .main-content {
   margin-left: 100px;

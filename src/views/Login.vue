@@ -35,7 +35,7 @@ export default {
       this.$axios.post('/login', this.data)
         .then((result) => {
           window.localStorage.setItem('token',  result.data.token)
-          this.$router.push('Home')
+          this.$router.push('/control-panel')
         })
         .catch(() => {})
     }

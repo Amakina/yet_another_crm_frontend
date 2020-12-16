@@ -8,7 +8,7 @@
         <b-button class="deal-controls-add" variant="primary" @click="showModal">Добавить договор</b-button>
       </div>
       <div class="deal-sub-controls">
-        <b-check class="deal-controls-checkbox" @input="getNotPaid">Показать только неоплаченные заказы</b-check>
+        <b-check v-model="showingNotPaid" class="deal-controls-checkbox" @input="getNotPaid">Показать только неоплаченные заказы</b-check>
         <date-picker 
           class="deal-controls-date" 
           v-model="extra.filterDate" 
@@ -158,6 +158,7 @@ export default {
       ],
       all: [],
       notPaid: [],
+      showingNotPaid: false,
       update: false,
     }
   },
@@ -321,6 +322,16 @@ export default {
     filterSearch() {
       this.$axios.post('/filter-query', {...this.extra, table: 'deals_view', handler: 'deals', token: this.token })
         .then(({data}) => {
+          this.handleData(data, 'all')
+          if (!this.showingNotPaid) this.items = this.clone(this.all)
+          console.log(data)
+        })
+        .catch((error) => console.log(error))
+
+      this.$axios.post('/filter-query', {...this.extra, table: 'deals_view', handler: 'deals', method: 'NotPaid', token: this.token })
+        .then(({data}) => {
+          this.handleData(data, 'notPaid')
+          if (this.showingNotPaid) this.items = this.clone(this.notPaid)
           console.log(data)
         })
         .catch((error) => console.log(error))

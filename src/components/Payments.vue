@@ -187,7 +187,6 @@ export default {
     filterSearch() {
       this.$axios.post('/filter-query', {...this.extra, table: 'payments', handler: 'payments', token: this.token })
       .then(({data}) => {
-        console.log(data)
         this.items = data
       })
       .catch((error) => console.log(error))
