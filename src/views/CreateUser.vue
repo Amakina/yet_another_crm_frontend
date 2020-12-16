@@ -1,13 +1,13 @@
 <template>
   <div class="container">
     <form action="/create-user" method="post" @submit.prevent="createUser">
-      <h1>Create user</h1>
+      <h1>Создать пользователя</h1>
       <b-form-input v-model="user_email" placeholder="E-mail" name="user_email" type="email" required/>
       <b-form-input v-model="user_password" placeholder="Password" name="user_password" type="password" minlength="8" required/>
       <b-form-input v-model="confirmPassword" placeholder="Confirm password" name="confirm_password" type="password" minlength="8"/>
       <b-form-input v-model="user_name" placeholder="Name" name="user_name" type="text" required/>
       <b-form-select v-model="role" :options="[1, 2]"/>
-      <b-button variant="primary" type="submit">Create user</b-button>
+      <b-button variant="primary" type="submit">Создать пользователя</b-button>
       <div v-if="error" class="error">{{error}}</div>
       <div v-else-if="success" class="success">{{success}}</div>
     </form>
@@ -35,7 +35,7 @@
     methods: {
       createUser() {
         if (this.confirmPassword != this.user_password && this.user_password) {
-          this.error = 'Passwords are not matching'
+          this.error = 'Пароли не совпадают'
           return
         }
         this.$axios.post('/create-user', { 
@@ -46,7 +46,7 @@
             token: this.token
           })
           .then(() => {
-            this.success = `User ${this.user_email} has been signed up`
+            this.success = `Пользователь ${this.user_email} уже существует`
             this.user_email = ''
             this.user_password = ''
             this.user_name = ''

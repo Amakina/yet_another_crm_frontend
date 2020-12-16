@@ -5,7 +5,7 @@
       <div class="event-main-controls">
         <b-pagination v-model="currentPage" :total-rows="rows" :per-page="perPage">
         </b-pagination>
-        <b-button class="event-controls-add" variant="primary" @click="showModal">Добавить договор</b-button>
+        <b-button class="event-controls-add" variant="primary" @click="showModal">Добавить событие</b-button>
       </div>
       <div class="event-sub-controls">
         <date-picker 
@@ -86,7 +86,7 @@ export default {
           label: 'Описание',
         },
         {
-          key: 'responsible_id',
+          key: 'name',
           label: 'Ответственный'
         },
         {
@@ -98,12 +98,13 @@ export default {
         filterDate: '',
         search: '',
         searchField: '',
-        searchFields: [{ key: 'Ответственный', value: 'responsible_id' }, { key: 'Описание', value: 'description' }],
+        searchFields: [{ key: 'Ответственный', value: 'name' }, { key: 'Описание', value: 'description' }],
         sortField: '',
         sortFields: [
-          { key: 'Дата - по возрастнию', value: 'date', dir: 1 }, 
-          { key: 'Дата - по убыванию', value: 'date', dir: 0 }
+          { key: 'Дата - по возрастнию', value: 'date_not_formated', dir: 1 }, 
+          { key: 'Дата - по убыванию', value: 'date_not_formated', dir: 0 }
         ],
+       dataField: { key: 'Дата', value: 'date_not_formated'},
       },
       update: false,
     }
@@ -120,15 +121,18 @@ export default {
     },
   },
   mounted() {
-    this.$axios.post('/get-events', { token: this.token })
-      .then(({ data }) => this.items = data)
-      .catch((error) => mutations.setError(error.response.data))
+    this.getData()
 
     this.$axios.post('/get-workers', { token: this.token })
       .then(({ data }) => this.workers = data)
       .catch((error) => mutations.setError(error.response.data))
   },
   methods: {
+    getData() {
+      this.$axios.post('/get-events', { token: this.token })
+        .then(({ data }) => this.items = data)
+        .catch((error) => mutations.setError(error.response.data))
+    },
     resetData() {
       this.data = {
         code: '',
@@ -156,7 +160,7 @@ export default {
       if (!this.update) {
         this.$axios.post('/add-event', { ...this.data, date: fixedDate, token: this.token })
           .then(() => {
-            this.items.push(this.data)
+            this.getData()
           })
           .catch((error) => mutations.setError(error.response.data))
         return
@@ -164,10 +168,12 @@ export default {
 
       this.$axios.post('/update-event', { ...this.data, date: fixedDate, token: this.token })
         .then(() => {
-          Object.keys(this.data).forEach((key) => {
+          /*Object.keys(this.data).forEach((key) => {
             this.selectedRecord[key] = this.data[key]
           })
-          this.selectedRecord = null
+          this.selectedRecord = null*/
+        
+          this.getData()
         })
         .catch((error) => mutations.setError(error.response.data))
     },
@@ -192,7 +198,7 @@ export default {
       }
     },
     filterSearch() {
-      this.$axios.post('/filter-query', {...this.extra, table: 'events', handler: 'events', token: this.token })
+      this.$axios.post('/filter-query', {...this.extra, table: 'events_view', handler: 'events', token: this.token })
       .then(({data}) => {
         this.items = data
       })
@@ -242,7 +248,7 @@ export default {
   margin-right: 1em;
 }
 .event-controls-select {
-  width: 400px;
+  width: 500px;
   margin-left: 1em;
   margin-right: 1em;
 }

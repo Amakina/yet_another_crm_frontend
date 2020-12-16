@@ -17,6 +17,7 @@
         <b-form-input v-model="repeat_password" name="repeat_password" type="password" placeholder="Повторите пароль" minlength="8" required/>
         <b-button type="submit" variant="primary" block>Зарегистрироваться</b-button>
         <b-button variant="primary" block @click="onBackClick">Назад</b-button>
+        <div v-if="error" class="error">{{error}}</div>
       </div>
       <router-link to="/login">Уже зарегистрированы? Войти</router-link>
     </b-form>
@@ -39,7 +40,8 @@ export default {
         user_name: '',
         user_email: '',
         user_password: '',
-      }
+      },
+      error: ''
     }
   },
   methods: {
@@ -50,7 +52,10 @@ export default {
       this.page = 1;
     },
     onSubmit() {
-      if (this.repeat_password !== this.data.user_password) return
+      if (this.repeat_password !== this.data.user_password) {
+        this.error = 'Пароли не совпадают'
+        return
+      }
       this.$axios.post('/signup', this.data)
     }
   }

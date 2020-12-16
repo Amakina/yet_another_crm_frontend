@@ -120,15 +120,18 @@ export default {
     },
   },
   mounted() {
-    this.$axios.post('/get-customers', { token: this.token })
-      .then(({ data }) => { this.items = data; this.all = this.items })
-      .catch((error) => mutations.setError(error.response.data))
-
-    this.$axios.post('/get-regulars', { token: this.token })
-      .then(({ data }) => { this.regulars = data })
-      .catch((error) => mutations.setError(error.response.data))
+    this.getData()
   },
   methods: {
+    getData() {
+      this.$axios.post('/get-customers', { token: this.token })
+        .then(({ data }) => { this.items = data; this.all = this.items })
+        .catch((error) => mutations.setError(error.response.data))
+
+      this.$axios.post('/get-regulars', { token: this.token })
+        .then(({ data }) => { this.regulars = data })
+        .catch((error) => mutations.setError(error.response.data))
+    },
     clone(o) {
       return JSON.parse(JSON.stringify(o))
     },

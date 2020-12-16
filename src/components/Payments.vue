@@ -68,7 +68,7 @@ export default {
           label: 'ID'
         },
         {
-          key: 'deal_id',
+          key: 'deal_name',
           label: 'Номер договора'
         },
         {
@@ -90,17 +90,16 @@ export default {
       ],
       busy: true,
       currentPage: 1,
-      rows: 0,
       perPage: 5,
       items: [],
       extra: {
         search: '',
         searchField: '',
-        searchFields: [{ key: '№ договора', value: 'deal_id' }, { key: '№ чека', value: 'receipt' }],
+        searchFields: [{ key: '№ договора', value: 'deal_name' }, { key: '№ чека', value: 'receipt' }],
         sortField: '',
         sortFields: [
-          { key: '№ договора - по возрастнию', value: 'deal_id', dir: 1 }, 
-          { key: '№ договора - по убыванию', value: 'deal_id', dir: 0 }, 
+          { key: '№ договора - по возрастнию', value: 'deal_name', dir: 1 }, 
+          { key: '№ договора - по убыванию', value: 'deal_name', dir: 0 }, 
           { key: 'Сумма - по возрастанию', value: 'sum', dir: 1 }, 
           { key: 'Сумма - по убыванию', value: 'sum', dir: 0 }
         ],
@@ -118,18 +117,23 @@ export default {
         title: this.update ? 'Обновить чек' : 'Добавить чек',
       }
     },
+    rows() {
+      return this.items.length
+    },
   },
   mounted() {
     this.busy = true
-    this.$axios.post('/get-payments', { token: this.token })
-      .then(({ data }) =>  this.items = data)
-      .catch((error) => mutations.setError(error.response.data))
-
+    this.getData()
     this.$axios.post('/get-deals', { token: this.token })
     .then(({ data }) =>  this.options = data.filter(d => d.id && !d.service_name))
     .catch((error) => mutations.setError(error.response.data))
   },
   methods: {
+    getData() {
+      this.$axios.post('/get-payments', { token: this.token })
+        .then(({ data }) =>  this.items = data)
+        .catch((error) => mutations.setError(error.response.data))
+    },
     resetData() {
       this.data = {
         code: '',
@@ -157,7 +161,8 @@ export default {
       if (!this.update) {
         this.$axios.post('/add-payment', { ...this.data, date: fixedDate, token: this.token })
           .then(() => {
-            this.items.push({ ...this.data, deal_id: this.data.selected.deal_id })
+            //this.items.push({ ...this.data, deal_id: this.data.selected.deal_id })
+            this.getData()
           })
           .catch((error) => mutations.setError(error.response.data))
         return
@@ -165,10 +170,11 @@ export default {
 
       this.$axios.post('/update-payment', { ...this.data, date: fixedDate, token: this.token })
           .then(() => {
-            Object.keys(this.data).forEach((key) => {
+            /*Object.keys(this.data).forEach((key) => {
               this.selectedRecord[key] = this.data[key]
             })
-            this.selectedRecord = null
+            this.selectedRecord = null*/
+            this.getData()
           })
           .catch((error) => mutations.setError(error.response.data))
     },
@@ -193,7 +199,7 @@ export default {
       }
     },
     filterSearch() {
-      this.$axios.post('/filter-query', {...this.extra, table: 'payments', handler: 'payments', token: this.token })
+      this.$axios.post('/filter-query', {...this.extra, table: 'payments_view', handler: 'payments', token: this.token })
       .then(({data}) => {
         this.items = data
       })

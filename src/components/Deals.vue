@@ -9,6 +9,7 @@
       </div>
       <div class="deal-sub-controls">
         <b-check v-model="showingNotPaid" class="deal-controls-checkbox" @input="getNotPaid">Показать только неоплаченные заказы</b-check>
+        <v-select class="deal-controls-select" v-model="extra.dataField" :options="extra.dataFields" label="key" placeholder="Дата"/>
         <date-picker 
           class="deal-controls-date" 
           v-model="extra.filterDate" 
@@ -56,6 +57,7 @@
             </b-tab>
           </b-tabs>
 
+          <v-select :options="statuses" v-model="data.status" label="name" placeholder="Статус"/>
           <b-input v-model="data.deal_id" placeholder="Номер договора" />
           <v-select :options="services" v-model="selectedServices" multiple label="name" placeholder="Выберите услуги"/>
           <div class="add-deal-dates">
@@ -101,6 +103,7 @@ export default {
         email: '',
         deal_date: '',
         finish_date: '',
+        status: '',
       },
       extra: {
         filterDate: '',
@@ -114,7 +117,16 @@ export default {
           { key: 'К оплате - по возрастанию', value: 'final_sum', dir: 1 }, 
           { key: 'К оплате - по убыванию', value: 'final_sum', dir: 0 }
         ],
+        dataField: '',
+        dataFields: [
+          { key: 'Дата заключения', value: 'deal_date_not_formated'}, 
+          { key: 'Дата завершения', value: 'finish_date_not_formated'}, 
+        ]
       },
+      statuses: [
+        'Принят к исполнению',
+        'Работы завершены'
+      ],
       selectedCustomers: null,
       selectedServices: [],
       customers: [],
@@ -183,7 +195,7 @@ export default {
         this.customers = data
       })
       .catch((error) => {
-        console.log(error)
+        mutations.setError(error.response.data)
       })
 
     this.$axios.post('/get-services', { token: this.token })
@@ -191,9 +203,13 @@ export default {
         this.services = data
       })
       .catch((error) => {
-        console.log(error)
+        mutations.setError(error.response.data)
       })
 
+    this.getData()
+  },
+  methods: {
+    getData() {
     this.busy = true
     this.$axios.post('/get-deals', { token: this.token })
       .then(({ data }) => {
@@ -207,8 +223,7 @@ export default {
         this.handleData(data, 'notPaid')
       })
       .catch((error) => mutations.setError(error.response.data))
-  },
-  methods: {
+    },
     handleData(data, arrayName) {
       if (!data || !data.length) return
       let prev = data[0].id
@@ -270,23 +285,25 @@ export default {
       if (!this.update) {
         this.$axios.post('/add-deal', fixedData)
           .then(() => {
-            this.notPaid.push(this.data)
+            /*this.notPaid.push(this.data)
             this.all.push(this.data)
-            this.items.push(this.data)
+            this.items.push(this.data)*/
+            this.getData()
           })
-          .catch((error) => console.log(error))
+          .catch((error) => mutations.setError(error.response.data))
         return
       }
 
       this.$axios.post('/update-deal', fixedData)
         .then(() => {
-          Object.keys(fixedData).forEach((key) => {
+          /*Object.keys(fixedData).forEach((key) => {
             this.selectedRecord[key] = fixedData[key]
           })
           this.selectedRecord.selectedServices = fixedData.services
-          this.selectedRecord = null
+          this.selectedRecord = null*/
+          this.getData()
         })
-        .catch((error) => console.log(error))
+        .catch((error) => mutations.setError(error.response.data))
     },
     clone(o) {
       return JSON.parse(JSON.stringify(o))
@@ -311,7 +328,7 @@ export default {
             .then(() => {
               this.items.splice(i, 1)
             })
-            .catch((error) => console.log(error))
+            .catch((error) => mutations.setError(error.response.data))
           break
         }
       }
@@ -331,17 +348,15 @@ export default {
         .then(({data}) => {
           this.handleData(data, 'all')
           if (!this.showingNotPaid) this.items = this.clone(this.all)
-          console.log(data)
         })
-        .catch((error) => console.log(error))
+        .catch((error) => mutations.setError(error.response.data))
 
       this.$axios.post('/filter-query', {...this.extra, table: 'deals_view', handler: 'deals', method: 'NotPaid', token: this.token })
         .then(({data}) => {
           this.handleData(data, 'notPaid')
           if (this.showingNotPaid) this.items = this.clone(this.notPaid)
-          console.log(data)
         })
-        .catch((error) => console.log(error))
+        .catch((error) => mutations.setError(error.response.data))
     }
   }
 }

@@ -14,7 +14,7 @@
             type="search"
             placeholder="Type to Search"
           />
-          <label>Per page:</label><b-form-select v-model="perPage" :options="[5, 10, 20, 100, 200]"/>
+          <label>На стр:</label><b-form-select v-model="perPage" :options="[5, 10, 20, 100, 200]"/>
         </div>
         <b-table 
           id="users-table"
@@ -37,7 +37,7 @@
           <b-form-input v-model="confirmPassword" placeholder="Confirm password" name="confirm_password" type="password" minlength="8"/>
           <b-form-input v-model="selectedUser.name" placeholder="Name" name="name" type="text" required/>
           <b-form-select v-model="selectedUser.role" :options="[1, 2]"/>
-          <b-button variant="primary" type="submit">Save</b-button>
+          <b-button variant="primary" type="submit">Сохранить</b-button>
           <div v-if="error" class="error">{{error}}</div>
         </form>
     </b-modal>
@@ -103,7 +103,7 @@ export default {
     },
     save() {
       if (this.confirmPassword != this.selectedUser.password && this.selectedUser.password) {
-        this.error = 'Passwords are not matching'
+        this.error = 'Пароли не совпадают'
         return
       }
       this.$axios.post('/edit-user', { ...this.selectedUser, token: this.token })
