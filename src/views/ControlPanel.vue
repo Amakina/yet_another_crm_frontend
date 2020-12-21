@@ -7,6 +7,7 @@
       <payments v-if="panels.payments"  />
       <events v-if="panels.events"  />
       <customers v-if="panels.customers"  />
+      <RFM v-if="panels.RFM"  />
     </div>
   </div>
 </template>
@@ -18,6 +19,7 @@ import Deals from '../components/Deals'
 import Payments from '../components/Payments'
 import Events from '../components/Events'
 import Customers from '../components/Customers'
+import RFM from '../components/RFM'
 
 export default {
   components: {
@@ -26,7 +28,8 @@ export default {
     Deals,
     Payments,
     Events,
-    Customers
+    Customers,
+    RFM,
   },
   data() {
     return {
@@ -37,6 +40,7 @@ export default {
         payments: false,
         events: false,
         customers: false,
+        RFM: false,
       }
     }
   },

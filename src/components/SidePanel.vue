@@ -5,6 +5,7 @@
     <b-icon icon="credit-card" variant="primary" @click="onButtonClick('payments')"></b-icon>
     <b-icon icon="calendar-event" variant="primary" @click="onButtonClick('events')"></b-icon>
     <b-icon icon="people" variant="primary" @click="onButtonClick('customers')"></b-icon>
+    <b-icon icon="file-earmark-bar-graph" variant="primary" @click="onButtonClick('RFM')"></b-icon>
     <router-link to="/create-user">
       <b-icon icon="person-plus" variant="primary"></b-icon>
     </router-link>

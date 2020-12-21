@@ -39,6 +39,7 @@
         <b-input v-model="data.name" placeholder="Название услуги" maxlength="100"/>
         <b-textarea v-model="data.description" placeholder="Описание услуги" rows="4"/>
         <b-input v-model="data.price" type="number" placeholder="Цена" />
+        <b-input v-model="data.materials" type="number" placeholder="Стоимость материалов" />
         <div class="add-services-buttons">
         <b-button type="confirm" variant="primary" @click="hideModal">{{modal.button}}</b-button>
         <b-button type="reset" variant="primary" @click="hideModal">Отмена</b-button>
@@ -62,6 +63,7 @@ export default {
         name: '',
         description: '',
         price: 0.0,
+        materials: 0.0
       },
       items: [],
       fields: [
@@ -84,6 +86,10 @@ export default {
           {
             key: 'price',
             lebel: 'Цена',
+          }, 
+          {
+            key: 'materials',
+            lebel: 'Материалы',
           }, 
           {
             key: 'delete',
